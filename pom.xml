@@ -9,7 +9,7 @@
     <description>Framework for Mule Connectors Functional Testing</description>
 
     <properties>
-        <mule.version>3.4.0</mule.version>
+        <mule.version>3.5.0-andes</mule.version>
         <junit.version>4.10</junit.version>
     </properties>
 
