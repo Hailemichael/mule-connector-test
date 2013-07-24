@@ -10,8 +10,6 @@ package org.mule.modules.tests;
 
 import org.mule.transport.NullPayload;
 
-import java.util.List;
-
 /**
  * Util class for connector tests
  *

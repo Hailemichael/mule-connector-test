@@ -11,7 +11,7 @@ package org.mule.modules.tests;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.mule.api.MuleEvent;
-import org.mule.api.processor.MessageProcessor;
+import org.mule.construct.Flow;
 import org.mule.tck.junit4.FunctionalTestCase;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -64,13 +64,9 @@ public abstract class TestParent extends FunctionalTestCase {
      * @return message payload
      * @throws Exception
      */
-    protected <T> T runFlow(String flowName) throws Exception {
+    protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
         MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(messageTestObject));
         return (T) response.getMessage().getPayload();
-    }
-
-    private MessageProcessor lookupFlowConstruct(String name) {
-        return (MessageProcessor) muleContext.getRegistry().lookupFlowConstruct(name);
     }
 
     /**
@@ -98,5 +94,15 @@ public abstract class TestParent extends FunctionalTestCase {
      */
     protected <T> T getValueFromMessageTestObject(String key) {
         return (T) messageTestObject.get(key);
+    }
+
+    /**
+     * Retrieve a flow by name from the registry
+     *
+     * @param name Name of the flow to retrieve
+     */
+    protected Flow lookupFlowConstruct(String name)
+    {
+        return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     }
 }

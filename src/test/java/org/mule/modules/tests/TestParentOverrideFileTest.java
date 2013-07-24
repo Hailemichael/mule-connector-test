@@ -19,7 +19,7 @@ public class TestParentOverrideFileTest extends TestParent {
 
     @Test
     public void testOverrideXmlConfig() throws Exception {
-        assertEquals(runFlow("test"), "Override");
+        assertEquals(runFlowAndGetPayload("test"), "Override");
     }
 
     @Override

@@ -26,7 +26,7 @@ public class TestParentTest extends TestParent {
     @Test
     public void testNotModifiedPayload() throws Exception {
         addToMessageTestObject(TEST_KEY, TEST_VALUE);
-        Map<String, Object> payload = runFlow("test-without-modifying-payload");
+        Map<String, Object> payload = runFlowAndGetPayload("test-without-modifying-payload");
         assertEquals(payload.get(TEST_KEY), TEST_VALUE);
     }
 
@@ -38,7 +38,7 @@ public class TestParentTest extends TestParent {
         map.put("key2", "testing");
         addToMessageTestObject(map);
 
-        String payload = runFlow("test-get-payload");
+        String payload = runFlowAndGetPayload("test-get-payload");
         assertEquals(payload, "Modified testing");
     }
 
