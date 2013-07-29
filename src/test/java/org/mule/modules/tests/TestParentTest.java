@@ -8,7 +8,9 @@
 
 package org.mule.modules.tests;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,9 @@ public class TestParentTest extends TestParent {
 
     private static final String TEST_KEY = "key";
     private static final String TEST_VALUE = "testing";
+
+    @Rule
+    public ExpectedException thrownException = ExpectedException.none();
 
     @Test
     public void testNotModifiedPayload() throws Exception {
@@ -46,5 +51,15 @@ public class TestParentTest extends TestParent {
     public void testGetValueFromMessageTestObject() {
         addToMessageTestObject(TEST_KEY, TEST_VALUE);
         assertEquals(getValueFromMessageTestObject(TEST_KEY), TEST_VALUE);
+    }
+
+    /**
+     * Test runFlow throws the actual cause and not a MessagingException
+     * @throws Exception
+     */
+    @Test
+    public void testGettingException() throws Exception {
+        thrownException.expect(NullPointerException.class);
+        runFlowAndGetPayload("test-exception");
     }
 }

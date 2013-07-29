@@ -10,6 +10,7 @@ package org.mule.modules.tests;
 
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
+import org.mule.api.MessagingException;
 import org.mule.api.MuleEvent;
 import org.mule.construct.Flow;
 import org.mule.tck.junit4.FunctionalTestCase;
@@ -58,15 +59,29 @@ public abstract class TestParent extends FunctionalTestCase {
     }
 
     /**
-     * Runs a flow using messageTestObject as payload
+     * Runs a flow using messageTestObject as payload. If something fails it throws the actual exception
+     * and not the Mule MessagingException wrapper
      *
      * @param flowName name of the flow to run
      * @return message payload
      * @throws Exception
      */
     protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
-        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(messageTestObject));
-        return (T) response.getMessage().getPayload();
+        MuleEvent response = null;
+
+        try {
+            response = lookupFlowConstruct(flowName).process(getTestEvent(messageTestObject));
+        } catch (Exception e) {
+            if (e instanceof MessagingException) {
+                throw ((MessagingException) e).getCauseException();
+            }
+        }
+
+        if (response != null) {
+            return (T) response.getMessage().getPayload();
+        } else {
+            return null;
+        }
     }
 
     /**
