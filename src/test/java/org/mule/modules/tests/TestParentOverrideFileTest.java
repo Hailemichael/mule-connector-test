@@ -15,7 +15,7 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author Mulesoft, Inc.
  */
-public class TestParentOverrideFileTest extends TestParent {
+public class TestParentOverrideFileTest extends ConnectorTestCase {
 
     @Test
     public void testOverrideXmlConfig() throws Exception {
