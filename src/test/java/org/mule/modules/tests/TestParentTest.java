@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author Mulesoft, Inc.
  */
-public class TestParentTest extends TestParent {
+public class TestParentTest extends ConnectorTestCase {
 
     private static final String TEST_KEY = "key";
     private static final String TEST_VALUE = "testing";
@@ -30,18 +30,18 @@ public class TestParentTest extends TestParent {
 
     @Test
     public void testNotModifiedPayload() throws Exception {
-        addToMessageTestObject(TEST_KEY, TEST_VALUE);
+        upsertOnTestRunMessage(TEST_KEY, TEST_VALUE);
         Map<String, Object> payload = runFlowAndGetPayload("test-without-modifying-payload");
         assertEquals(payload.get(TEST_KEY), TEST_VALUE);
     }
 
     @Test
     public void testModifiedPayload() throws Exception {
-        addToMessageTestObject(TEST_KEY, "Modified");
+        upsertOnTestRunMessage(TEST_KEY, "Modified");
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("key2", "testing");
-        addToMessageTestObject(map);
+        upsertOnTestRunMessage(map);
 
         String payload = runFlowAndGetPayload("test-get-payload");
         assertEquals(payload, "Modified testing");
@@ -49,8 +49,8 @@ public class TestParentTest extends TestParent {
 
     @Test
     public void testGetValueFromMessageTestObject() {
-        addToMessageTestObject(TEST_KEY, TEST_VALUE);
-        assertEquals(getValueFromMessageTestObject(TEST_KEY), TEST_VALUE);
+        upsertOnTestRunMessage(TEST_KEY, TEST_VALUE);
+        assertEquals(getTestRunMessageValue(TEST_KEY), TEST_VALUE);
     }
 
     /**

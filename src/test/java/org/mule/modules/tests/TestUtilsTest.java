@@ -28,11 +28,11 @@ public class TestUtilsTest {
 
     @Test
     public void testAssertNullPayload() {
-        assertTrue(TestUtils.assertNullPayload(NULL_PAYLOAD));
-        assertTrue(TestUtils.assertNullPayload("{NullPayload}"));
-        assertFalse(TestUtils.assertNullPayload("NullPayload"));
+        assertTrue(ConnectorTestUtils.assertNullPayload(NULL_PAYLOAD));
+        assertTrue(ConnectorTestUtils.assertNullPayload("{NullPayload}"));
+        assertFalse(ConnectorTestUtils.assertNullPayload("NullPayload"));
 
         thrownException.expect(NullPointerException.class);
-        assertFalse(TestUtils.assertNullPayload(null));
+        assertFalse(ConnectorTestUtils.assertNullPayload(null));
     }
 }
