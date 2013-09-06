@@ -7,15 +7,15 @@ Get Started
 -----------
 
 Add
-{code:xml}
+<pre><code>
         <dependency>
             <groupId>org.mule.tests</groupId>
             <artifactId>mule-tests-functional</artifactId>
             <version>${mule.version}</version>
             <scope>test</scope>
         </dependency>
-{code}
-        
+</code></pre>
+
 to the pom.xml of the connector.
 
 The [TestParent](https://github.com/mulesoft/mule-connector-test/blob/master/src/main/java/org/mule/modules/tests/TestParent.java)
