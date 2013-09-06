@@ -46,6 +46,24 @@ public class ConnectorTestUtils {
 		return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
     }
     
+    public static XMLGregorianCalendar generateXMLGregorianCalendarDateForDaysBeforeCurrent(int days) throws Exception {
+    	GregorianCalendar date = new GregorianCalendar();
+    	date.add(GregorianCalendar.DATE, -1*days);
+		return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
+    }
+    
+    public static XMLGregorianCalendar generateXMLGregorianCalendarDateForHoursBeforeCurrent(int hours) throws Exception {
+    	GregorianCalendar date = new GregorianCalendar();
+    	date.add(GregorianCalendar.HOUR, -1*hours);
+		return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
+    }
+    
+    public static XMLGregorianCalendar generateXMLGregorianCalendarDateForMinutesBeforeCurrent(int minutes) throws Exception {
+    	GregorianCalendar date = new GregorianCalendar();
+    	date.add(GregorianCalendar.MINUTE, -1*minutes);
+		return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
+    }
+    
     // algo que ayude con el nesting de objetos en el payload
     
     // que de List<Objeto> me extraiga una List<attributoDeObjeto>

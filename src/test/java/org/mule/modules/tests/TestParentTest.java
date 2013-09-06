@@ -59,7 +59,7 @@ public class TestParentTest extends ConnectorTestCase {
      */
     @Test
     public void testGettingException() throws Exception {
-        thrownException.expect(NullPointerException.class);
+        thrownException.expect(org.mule.api.transformer.TransformerMessagingException.class);
         runFlowAndGetPayload("test-exception");
     }
 }
