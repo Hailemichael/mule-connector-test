@@ -6,6 +6,18 @@ Framework for making Mule connectors testing easier.
 Get Started
 -----------
 
+Add
+{code:xml}
+        <dependency>
+            <groupId>org.mule.tests</groupId>
+            <artifactId>mule-tests-functional</artifactId>
+            <version>${mule.version}</version>
+            <scope>test</scope>
+        </dependency>
+{code}
+        
+to the pom.xml of the connector.
+
 The [TestParent](https://github.com/mulesoft/mule-connector-test/blob/master/src/main/java/org/mule/modules/tests/TestParent.java)
 class simplifies how to call Mule flows and process the corresponding results, you only need to extend it in your connector
 TestParent (e.g. [SalesforceTestParent](https://github.com/mulesoft/salesforce-connector/blob/master/src/test/java/org/mule/modules/salesforce/automation/testcases/SalesforceTestParent.java?source=cc)).
