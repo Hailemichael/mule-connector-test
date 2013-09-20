@@ -7,12 +7,26 @@ Get Started
 -----------
 
 Add
-        <dependency>
+<pre><code>
+
+         <dependency>
             <groupId>org.mule.tests</groupId>
             <artifactId>mule-tests-functional</artifactId>
             <version>${mule.version}</version>
             <scope>test</scope>
         </dependency>
+
+</code></pre><pre><code>
+
+        <dependency>
+            <groupId>org.mule.modules</groupId>
+            <artifactId>mule-connector-test</artifactId>
+            <version>${mule.devkit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+</code></pre>        
+        
 to the pom.xml of the connector.
 
 The [TestParent](https://github.com/mulesoft/mule-connector-test/blob/master/src/main/java/org/mule/modules/tests/TestParent.java)
