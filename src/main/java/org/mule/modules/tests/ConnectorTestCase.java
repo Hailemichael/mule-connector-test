@@ -73,6 +73,11 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
         return (T) response.getMessage().getPayload();
     }
     
+    /**
+     * Use initializeTestRunMessage instead
+     * @param data
+     */
+    @Deprecated
     protected void loadTestRunMessage(String beanId) {
 		Object bean = context.getBean(beanId);
 		testData.clear();
@@ -83,15 +88,45 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		}
     }
  
+    /**
+     * Use initializeTestRunMessage instead
+     * @param data
+     */
+    @Deprecated
 	public void loadTestRunMessage(Map<String,Object> data) {
 		testData.clear();
 		testData.putAll(data);
-	}   
+	}
+	
+    protected void initializeTestRunMessage(String beanId) {
+		Object bean = context.getBean(beanId);
+		testData.clear();
+		if (bean instanceof Map) {
+			testData.putAll((Map<String, Object>) context.getBean(beanId));
+		} else {
+			testData.put(beanId, bean);
+		}
+    }
+ 
+	public void initializeTestRunMessage(Map<String,Object> data) {
+		testData.clear();
+		testData.putAll(data);
+	}
    
     public <T> T getBeanFromContext(String beanId) throws BeansException {
 		return (T) context.getBean(beanId);
 	}
-
+    
+    public void upsertBeanFromContextOnTestRunMessage(String beanId) {
+		Object bean = getBeanFromContext(beanId);
+		testData.put(beanId, bean);
+    }
+    
+    public void upsertBeanFromContextOnTestRunMessage(String key,String beanId) {
+		Object bean = getBeanFromContext(beanId);
+		testData.put(key, bean);
+    }
+    
 	public void upsertOnTestRunMessage(String key, Object value) {
 		testData.put(key, value);
 	}

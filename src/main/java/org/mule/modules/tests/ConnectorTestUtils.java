@@ -11,7 +11,6 @@ package org.mule.modules.tests;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
-import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
