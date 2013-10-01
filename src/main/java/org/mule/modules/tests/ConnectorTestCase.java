@@ -148,7 +148,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		return testData.containsKey(key);
 	}
 	
-	public Set<String> getTestRunMessageKeySet(Object key) {
+	public Set<String> getTestRunMessageKeySet() {
 		return testData.keySet();
 	}    
 }
