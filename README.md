@@ -6,28 +6,25 @@ Framework for making Mule connectors testing easier.
 Get Started
 -----------
 
-Add
+Dependency added to mule-devkit-parent pom.xml
+
 <pre><code>
 
+         <properties>
+                   <connector.test.version>2.0.0</connector.test.version>
+         </properties>
+
+        <!--  Mule Connector Test Framework  -->
          <dependency>
-            <groupId>org.mule.tests</groupId>
-            <artifactId>mule-tests-functional</artifactId>
-            <version>${mule.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-</code></pre><pre><code>
-
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-connector-test</artifactId>
-            <version>${mule.devkit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        
+                  <groupId>org.mule.modules</groupId>
+                  <artifactId>mule-connector-test</artifactId>
+                  <version>${connector.test.version}</version>
+                  <scope>test</scope>
+         </dependency>
+                 
 </code></pre>        
         
-to the pom.xml of the connector.
+
 
 The [TestParent](https://github.com/mulesoft/mule-connector-test/blob/master/src/main/java/org/mule/modules/tests/TestParent.java)
 class simplifies how to call Mule flows and process the corresponding results, you only need to extend it in your connector
