@@ -10,6 +10,7 @@ package org.mule.modules.tests;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
@@ -143,7 +144,11 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		testData.remove(key);
 	}
 
-	public boolean containsKeyTestRunMessage(Object key) {
+	public boolean keyContainedInTestRunMessage(Object key) {
 		return testData.containsKey(key);
+	}
+	
+	public Set<String> getTestRunMessageKeySet(Object key) {
+		return testData.keySet();
 	}    
 }
