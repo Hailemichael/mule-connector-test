@@ -15,6 +15,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.mule.api.MuleEvent;
+import org.mule.api.MuleMessage;
 import org.mule.construct.Flow;
 import org.mule.tck.junit4.FunctionalTestCase;
 import org.springframework.beans.BeansException;
@@ -64,6 +65,16 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
         return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     }
 
+    protected MuleMessage runFlowAndGetMessage(String flowName) throws Exception {
+        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(testData));
+        return response.getMessage();
+    }
+
+    protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
+        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(context.getBean(beanId)));
+        return response.getMessage();
+    }
+    
     protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
         MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(testData));
         return (T) response.getMessage().getPayload();
@@ -109,6 +120,11 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		}
     }
  
+	public void initializeTestRunMessage(String key, Object value) {
+		initializeTestRunMessage(new HashMap<String,Object>());
+		upsertOnTestRunMessage(key,value);
+	}
+    
 	public void initializeTestRunMessage(Map<String,Object> data) {
 		testData.clear();
 		testData.putAll(data);
