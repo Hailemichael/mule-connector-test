@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertEquals;
 /**
  * @author Mulesoft, Inc.
  */
-public class TestParentTest extends ConnectorTestCase {
+public class ConnectorTestCaseTest extends ConnectorTestCase {
 
     private static final String TEST_KEY = "key";
     private static final String TEST_VALUE = "testing";
@@ -30,14 +30,14 @@ public class TestParentTest extends ConnectorTestCase {
 
     @Test
     public void testNotModifiedPayload() throws Exception {
-        upsertOnTestRunMessage(TEST_KEY, TEST_VALUE);
+        initializeTestRunMessage(TEST_KEY, TEST_VALUE);
         Map<String, Object> payload = runFlowAndGetPayload("test-without-modifying-payload");
         assertEquals(payload.get(TEST_KEY), TEST_VALUE);
     }
 
     @Test
     public void testModifiedPayload() throws Exception {
-        upsertOnTestRunMessage(TEST_KEY, "Modified");
+        initializeTestRunMessage(TEST_KEY, "Modified");
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("key2", "testing");
@@ -49,7 +49,7 @@ public class TestParentTest extends ConnectorTestCase {
 
     @Test
     public void testGetValueFromMessageTestObject() {
-        upsertOnTestRunMessage(TEST_KEY, TEST_VALUE);
+        initializeTestRunMessage(TEST_KEY, TEST_VALUE);
         assertEquals(getTestRunMessageValue(TEST_KEY), TEST_VALUE);
     }
 

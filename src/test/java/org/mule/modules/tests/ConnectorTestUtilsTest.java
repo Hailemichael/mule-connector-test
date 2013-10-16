@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Mulesoft, Inc
  */
-public class TestUtilsTest {
+public class ConnectorTestUtilsTest {
 
     private static final NullPayload NULL_PAYLOAD = NullPayload.getInstance();
 

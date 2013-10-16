@@ -8,12 +8,14 @@
 
 package org.mule.modules.tests;
 
+import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.apache.commons.io.IOUtils;
 import org.mule.transport.NullPayload;
 
 /**
@@ -63,7 +65,8 @@ public class ConnectorTestUtils {
 		return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
     }
     
-    // algo que ayude con el nesting de objetos en el payload
-    
-    // que de List<Objeto> me extraiga una List<attributoDeObjeto>
+    public static InputStream generateRandomInputStream() throws Exception {
+    	return IOUtils.toInputStream(UUID.randomUUID().toString()); 
+    }
+   
 }

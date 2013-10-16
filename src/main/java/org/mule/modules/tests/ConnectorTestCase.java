@@ -121,8 +121,8 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     }
  
 	public void initializeTestRunMessage(String key, Object value) {
-		initializeTestRunMessage(new HashMap<String,Object>());
-		upsertOnTestRunMessage(key,value);
+		testData.clear();
+		testData.put(key, value);
 	}
     
 	public void initializeTestRunMessage(Map<String,Object> data) {
@@ -143,10 +143,6 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		Object bean = getBeanFromContext(beanId);
 		testData.put(key, bean);
     }
-    
-	public void upsertOnTestRunMessage(String key, Object value) {
-		testData.put(key, value);
-	}
 
 	public void upsertOnTestRunMessage(Map<String,Object> data) {
 		testData.putAll(data);
