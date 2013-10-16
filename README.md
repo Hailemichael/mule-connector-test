@@ -5,9 +5,6 @@ Framework for making Mule connectors testing easier.
 
 Get Started
 -----------
-
-Dependency added to mule-devkit-parent pom.xml
-
 The [ConnectorTestCase](https://github.com/mulesoft/mule-connector-test/blob/master/src/main/java/org/mule/modules/tests/ConnectorTestCase.java)
 class simplifies how to call Mule flows and process the corresponding results, you only need to extend it in your connector
 TestParent class (e.g. [SalesforceTestParent](https://github.com/mulesoft/salesforce-connector/blob/master/src/test/java/org/mule/modules/salesforce/automation/testcases/SalesforceTestParent.java?source=cc)).
