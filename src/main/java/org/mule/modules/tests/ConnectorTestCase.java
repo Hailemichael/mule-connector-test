@@ -69,7 +69,18 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
         MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(testData));
         return response.getMessage();
     }
-
+    
+    protected <T> T runFlowAndGetInvocationProperty(String flowName, String invocationProperty) throws Exception {
+        return (T) ((MuleMessage) runFlowAndGetMessage(flowName)).getInvocationProperty(invocationProperty);
+    }
+    
+    /**
+     * 
+     * @param flowName Name of the flow containing the operation whose payload will be returned.
+     * @param beanId id of the bean that will be consumed by the operation.
+     * @return
+     * @throws Exception
+     */
     protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
         MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(context.getBean(beanId)));
         return response.getMessage();
@@ -144,6 +155,10 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		testData.put(key, bean);
     }
 
+	public void upsertOnTestRunMessage(String key, Object value) {
+		testData.put(key, value);
+	}
+    
 	public void upsertOnTestRunMessage(Map<String,Object> data) {
 		testData.putAll(data);
 	}
