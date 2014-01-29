@@ -38,15 +38,12 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     protected static final String DEFAULT_SPRING_CONFIG_FILE = "AutomationSpringBeans.xml";
     protected static List<String> SPRING_CONFIG_FILES = new LinkedList<String>();    
 
-    static {
-    	SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
-    }
-    
 	private Map<String, Object> testData = new HashMap<String, Object>();
 	private static ApplicationContext context;
 
     @BeforeClass
     public static void beforeClass(){  	
+    	SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
     	try {
     		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
         } catch (Exception e) {

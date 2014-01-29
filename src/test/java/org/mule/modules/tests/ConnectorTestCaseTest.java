@@ -25,7 +25,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * @author Mulesoft, Inc.
  */
-public class ConnectorTestCaseTest extends ConnectorTestCase {
+public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
 
 	private static ApplicationContext testContext = new ClassPathXmlApplicationContext(getConfigSpringFiles());
     
