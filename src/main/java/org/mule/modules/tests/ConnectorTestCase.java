@@ -55,7 +55,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     }
     
     protected static String[] getConfigSpringFiles() {
-    	return (String[]) SPRING_CONFIG_FILES.toArray();
+    	return SPRING_CONFIG_FILES.toArray(new String[SPRING_CONFIG_FILES.size()]);
     }
     
     /**
