@@ -9,6 +9,8 @@
 package org.mule.modules.tests;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,8 +36,12 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     private static final Logger LOGGER = Logger.getLogger(ConnectorTestCase.class);
 
     protected static final String DEFAULT_SPRING_CONFIG_FILE = "AutomationSpringBeans.xml";
-    protected static final String[] SPRING_CONFIG_FILES = new String[] { DEFAULT_SPRING_CONFIG_FILE };
+    protected static List<String> SPRING_CONFIG_FILES = new LinkedList<String>();    
 
+    static {
+    	SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
+    }
+    
 	private Map<String, Object> testData = new HashMap<String, Object>();
 	private static ApplicationContext context;
 
@@ -49,7 +55,25 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     }
     
     protected static String[] getConfigSpringFiles() {
-    	return SPRING_CONFIG_FILES;
+    	return (String[]) SPRING_CONFIG_FILES.toArray();
+    }
+    
+    /**
+     * Add a file to be loaded on the spring context. <p>
+     * <b>Note:</b>This method must be called from a static initializer static \{...\}
+     * @param fileLocation The location of the file containing the spring beans definitions
+     */
+    protected static void addConfigSpringFile(String fileLocation) {
+    	SPRING_CONFIG_FILES.add(fileLocation);
+    }
+    
+    /**
+     * Replace the list of spring beans to be loaded into the context. <p>
+     * <b>Note:</b>This method must be called from a static initializer static \{...\}
+     * @param configFilesLocation The list with the files location containing the spring beans definitions
+     */
+    protected static void setConfigSpringFiles(List<String> configFilesLocation) {
+    	SPRING_CONFIG_FILES = configFilesLocation;
     }
     
     @Override
