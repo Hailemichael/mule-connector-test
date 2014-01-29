@@ -13,11 +13,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class AutomationSpringBeansFileTest extends ConnectorTestCaseTestParent {
 	
 	static final private String MY_FILE_LOCATION = "myFileLocation.xml";
+	
+	@Before
+	@After
+	public void setUp() {
+		LinkedList<String> linkedList = new LinkedList<String>();
+		linkedList.add(DEFAULT_SPRING_CONFIG_FILE);
+		setConfigSpringFiles(linkedList);
+	}
 	
 	@Test
 	public void testAddConfigSpringFile() {

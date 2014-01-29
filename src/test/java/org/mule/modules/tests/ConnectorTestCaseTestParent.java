@@ -14,11 +14,6 @@ import org.junit.Before;
 
 public class ConnectorTestCaseTestParent extends ConnectorTestCase {
 
-	@Before
-	public void setUp() {
-		LinkedList<String> linkedList = new LinkedList<String>();
-		linkedList.add(DEFAULT_SPRING_CONFIG_FILE);
-		setConfigSpringFiles(linkedList);
-	}
+	
 	
 }
