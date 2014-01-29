@@ -60,40 +60,54 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     protected String getConfigXmlFile() {
         return "automation-test-flows.xml";
     }
+  
+    /**
+     * Generates the MuleEvent to be consumed by the Flow either from the TestRunMessage
+     * content or from a Map beanId.
+     * 
+     * payloadContent convention: Objects that can only be passed to the operation 
+     * from the payload should be referenced by a payloadContent for this method to 
+     * load them in the payload of the MuleMessage.
+     * 
+     * 
+     * @param beanId id of a Map Spring bean that is declared on the AutomationSpringBeans file
+     * @return MuleEvent to be passed to the flow invocation.
+     * @throws Exception
+     */
+    private MuleEvent generateMuleEvent(String... beanId) throws Exception {
+    	MuleEvent event;
+    	Object payload = null;
+    	
+    	Map<String,Object> dataValues = new HashMap<String,Object>();
+    	dataValues.putAll(testData);
+    	if (!(beanId.length == 0)) {
+    		dataValues = (HashMap<String,Object>) context.getBean(beanId[0]);
+    		
+    	} 
+    	
+    	Boolean payloadContent = dataValues.containsKey("payloadContent");
+    	if (payloadContent) {
+    		payload = dataValues.get("payloadContent");
+    		
+    	}
+
+    	event = getTestEvent(payload);
+		for(String key : dataValues.keySet()) {	
+			event.setFlowVariable(key, dataValues.get(key));
+
+		}
+		
+		if (payloadContent) {
+			event.removeFlowVariable("payloadContent");
+    		
+    	}
+
+		return event;
+    	
+    }
     
     protected Flow lookupFlowConstruct(String name) {
         return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
-    }
-
-    protected MuleMessage runFlowAndGetMessage(String flowName) throws Exception {
-        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(testData));
-        return response.getMessage();
-    }
-    
-    protected <T> T runFlowAndGetInvocationProperty(String flowName, String invocationProperty) throws Exception {
-        return (T) ((MuleMessage) runFlowAndGetMessage(flowName)).getInvocationProperty(invocationProperty);
-    }
-    
-    /**
-     * 
-     * @param flowName Name of the flow containing the operation whose payload will be returned.
-     * @param beanId id of the bean that will be consumed by the operation.
-     * @return
-     * @throws Exception
-     */
-    protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
-        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(context.getBean(beanId)));
-        return response.getMessage();
-    }
-    
-    protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
-        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(testData));
-        return (T) response.getMessage().getPayload();
-    }
-
-    protected <T> T runFlowAndGetPayload(String flowName, String beanId) throws Exception {
-        MuleEvent response = lookupFlowConstruct(flowName).process(getTestEvent(context.getBean(beanId)));
-        return (T) response.getMessage().getPayload();
     }
     
     /**
@@ -177,5 +191,72 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 	
 	public Set<String> getTestRunMessageKeySet() {
 		return testData.keySet();
-	}    
+	}   
+	
+	
+    /**
+     * TestRunMessage is already loaded with values for the operation
+     * @param flowName
+     * @return
+     * @throws Exception
+     */
+    protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
+        MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
+        return (T) response.getMessage().getPayload();
+    }
+	
+	
+	/**
+     * TestRunMessage is already loaded with values for the operation
+     * @param flowName
+     * @return
+     * @throws Exception
+     */
+    protected MuleMessage runFlowAndGetMessage(String flowName) throws Exception {
+        MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
+        return response.getMessage();
+    }
+    
+
+    /**
+     * @param flowName
+     * @param invocationProperty
+     * @return
+     * @throws Exception
+     */
+    protected <T> T runFlowAndGetInvocationProperty(String flowName, String invocationProperty) throws Exception {
+        return (T) ((MuleMessage) runFlowAndGetMessage(flowName)).getInvocationProperty(invocationProperty);
+    }
+
+    /**
+     * Returns the MuleMessage containing the payload of the operation.
+     * TestRunMessage is not the source of data for this method.
+     * Meant for retrieving auxiliary information or when test involves a single call to the operation under test. 
+     * 
+     * @param flowName
+     * @param beanId is the id of a map Spring bean declared in the AutomationSpringBeans
+     * @return
+     * @throws Exception
+     */
+    protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
+    	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
+        return response.getMessage();
+    }
+    
+    
+    /**
+     * Returns the Payload of the flowName operation.
+     * TestRunMessage is not the source of data for this method.
+     * Meant for retrieving auxiliary information or when test involves a single call to the operation under test. 
+     * 
+     * @param flowName
+     * @param beanId is the id of a map Spring bean declared in the AutomationSpringBeans
+     * @return
+     * @throws Exception
+     */
+    protected <T> T runFlowAndGetPayload(String flowName, String beanId) throws Exception {
+    	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
+        return (T) response.getMessage().getPayload();
+    }
+
 }

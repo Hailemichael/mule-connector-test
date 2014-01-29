@@ -9,7 +9,7 @@
     </flow>
 
     <flow name="test-get-payload">
-        <set-payload value="#[map-payload:key] #[map-payload:key2]"/>
+        <set-payload value="#[flowVars['aMapKey']]|#[payload.anotherMapKey]"/>
     </flow>
 
     <flow name="test-exception">

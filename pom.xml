@@ -7,7 +7,7 @@
     <description>Framework for Mule Connectors Functional Testing</description>
 
     <properties>
-        <mule.version>3.5.0-andes</mule.version>
+        <mule.version>3.5.0-bighorn</mule.version>
         <junit.version>4.10</junit.version>
     </properties>
 
@@ -85,12 +85,6 @@
             <url>http://repository.mulesoft.org/releases/</url>
             <layout>default</layout>
         </repository>
-        <repository>
-  			<id>mule-ee</id>
-  			<name>Mulesoft EE Releases</name>
-  			<url>http://dev.ee.mulesource.com/repository/content/repositories/releases</url>
-  			<layout>default</layout>
-		</repository>
         <repository>
             <id>mulesoft-snapshots</id>
             <name>MuleSoft Snapshots Repository</name>

@@ -8,50 +8,85 @@
 
 package org.mule.modules.tests;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mule.api.MuleMessage;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author Mulesoft, Inc.
  */
 public class ConnectorTestCaseTest extends ConnectorTestCase {
 
-    private static final String TEST_KEY = "key";
-    private static final String TEST_VALUE = "testing";
-
+	private static ApplicationContext testContext = new ClassPathXmlApplicationContext(getConfigSpringFiles());
+    
+    private static Map<String, Object> aMap;
+    private static Map<String, Object> anotherMap;
+    
+    
     @Rule
     public ExpectedException thrownException = ExpectedException.none();
 
-    @Test
-    public void testNotModifiedPayload() throws Exception {
-        initializeTestRunMessage(TEST_KEY, TEST_VALUE);
-        Map<String, Object> payload = runFlowAndGetPayload("test-without-modifying-payload");
-        assertEquals(payload.get(TEST_KEY), TEST_VALUE);
+	@Before
+	public void setUp() {
+		aMap = (HashMap<String, Object>) testContext.getBean("aMap");
+    	anotherMap = (HashMap<String, Object>) testContext.getBean("anotherMap");
     }
-
+      
     @Test
-    public void testModifiedPayload() throws Exception {
-        initializeTestRunMessage(TEST_KEY, "Modified");
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("key2", "testing");
-        upsertOnTestRunMessage(map);
-
+    public void testInitializeTestRunMessagePassingKeyValuePair() {
+        initializeTestRunMessage("key", aMap.get("key"));
+        assertEquals(aMap.get("key"), getTestRunMessageValue("key"));
+    }
+    
+    @Test
+    public void testInitializeTestRunMessagePassingMap()  {
+    	initializeTestRunMessage(aMap);
+    	assertEquals(aMap.get("key"), getTestRunMessageValue("key"));      
+    }
+    
+    @Test
+    public void testInitializeTestRunMessageFromBeanId()  {
+        initializeTestRunMessage("aMap");
+        assertEquals(aMap.get("key"), getTestRunMessageValue("key"));      
+    }
+    
+    @Test
+    public void testRunFlowAndGetMessageFromTestRunMessage() throws Exception {
+    	initializeTestRunMessage("aMap");
+        MuleMessage message = runFlowAndGetMessage("test-get-payload");
+        assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), message.getPayload().toString());   
+    }
+    
+    @Test
+    public void testRunFlowAndGetMessagePassingBeanId() throws Exception {
+        MuleMessage message = runFlowAndGetMessage("test-get-payload", "aMap");
+        assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), message.getPayload().toString());
+        assertFalse(getTestRunMessageKeySet().containsAll(aMap.keySet()));
+    }
+    
+    @Test
+    public void testRunFlowAndGetPayloadFromTestRunMessage() throws Exception {
+    	initializeTestRunMessage("aMap");
         String payload = runFlowAndGetPayload("test-get-payload");
-        assertEquals(payload, "Modified testing");
+        assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), payload);   
     }
-
+    
     @Test
-    public void testGetValueFromMessageTestObject() {
-        initializeTestRunMessage(TEST_KEY, TEST_VALUE);
-        assertEquals(getTestRunMessageValue(TEST_KEY), TEST_VALUE);
-    }
+    public void testRunFlowAndGetPayloadPassingBeanId() throws Exception {
+    	String payload = runFlowAndGetPayload("test-get-payload", "aMap");
+        assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), payload);
+        assertFalse(getTestRunMessageKeySet().containsAll(aMap.keySet()));
+    }  
 
     /**
      * Test runFlow throws the actual cause and not a MessagingException

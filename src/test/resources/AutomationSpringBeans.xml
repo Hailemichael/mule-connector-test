@@ -6,5 +6,17 @@
                            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
                            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
                            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
-                          
+    
+    
+    <util:map id="anotherMap" map-class="java.util.HashMap"
+		key-type="java.lang.String" value-type="java.lang.Object">
+		<entry key="anotherMapKey" value="anotherMapValue" />
+	</util:map>
+    
+    <util:map id="aMap" map-class="java.util.HashMap"
+		key-type="java.lang.String" value-type="java.lang.Object">
+		<entry key="aMapKey" value="aMapValue" />
+		<entry key="payloadContent" value-ref="anotherMap" />
+	</util:map>
+                      
 </beans>
