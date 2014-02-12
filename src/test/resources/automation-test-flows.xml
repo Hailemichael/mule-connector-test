@@ -8,8 +8,12 @@
         <logger message="#[payload]" level="INFO" />
     </flow>
 
-    <flow name="test-get-payload">
-        <set-payload value="#[flowVars['aMapKey']]|#[payload.anotherMapKey]"/>
+    <flow name="test-maps-as-beans">
+        <set-payload value="#[flowVars.aMapKey]|#[payload.anotherMapKey]"/>
+    </flow>
+    
+    <flow name="test-pojo-as-bean">
+        <set-payload value="#[payload]"/>
     </flow>
 
     <flow name="test-exception">

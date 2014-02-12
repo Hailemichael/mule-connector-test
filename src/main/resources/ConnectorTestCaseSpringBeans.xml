@@ -8,20 +8,16 @@
                            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
     
     
-    <import resource="ConnectorTestCaseSpringBeans.xml" />
-
-    <util:map id="anotherMap" map-class="java.util.HashMap"
-		key-type="java.lang.String" value-type="java.lang.Object">
-		<entry key="anotherMapKey" value="anotherMapValue" />
-	</util:map>
-    
-    <util:map id="aMap">
-		<entry key="aMapKey" value="aMapValue" />
-		<entry key="payloadContent" value-ref="anotherMap" />
-	</util:map>
+    <bean id="dateFormat" class="java.text.SimpleDateFormat">
+		<constructor-arg value="yyyy-MM-dd HH:mm:ss" />
+	</bean>
 	
-	<bean id="aPOJO" class="java.lang.Integer">
-  		<constructor-arg value="100" />
- 	 </bean>
+	<bean id="randomEmailAddress" class="org.mule.modules.tests.ConnectorTestUtils"
+		factory-method="generateRandomEmailAddress" scope="prototype" />
+	
+	<bean id="xmlGregorianCalendarDateInThePast" class="org.mule.modules.tests.ConnectorTestUtils"
+		factory-method="generateXMLGregorianCalendarDateForMinutesBeforeCurrent" scope="prototype" >
+		<constructor-arg value="5" />
+	</bean>
                       
 </beans>

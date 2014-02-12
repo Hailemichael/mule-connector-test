@@ -81,47 +81,87 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     protected String getConfigXmlFile() {
         return "automation-test-flows.xml";
     }
-  
+
     /**
-     * Generates the MuleEvent to be consumed by the Flow either from the TestRunMessage
-     * content or from a Map beanId.
+     * Generates the MuleEvent to be consumed by the Flow from the TestRunMessage.
+     * 
      * 
      * payloadContent convention: Objects that can only be passed to the operation 
-     * from the payload should be referenced by a payloadContent for this method to 
+     * using the payload should be referenced by a payloadContent for this method to 
      * load them in the payload of the MuleMessage.
      * 
+     * Current testData values are transformed into a MuleEvent.
      * 
-     * @param beanId id of a Map Spring bean that is declared on the AutomationSpringBeans file
      * @return MuleEvent to be passed to the flow invocation.
      * @throws Exception
      */
-    private MuleEvent generateMuleEvent(String... beanId) throws Exception {
+    private MuleEvent generateMuleEvent() throws Exception {
     	MuleEvent event;
     	Object payload = null;
-    	
-    	Map<String,Object> dataValues = new HashMap<String,Object>();
-    	dataValues.putAll(testData);
-    	if (!(beanId.length == 0)) {
-    		dataValues = (HashMap<String,Object>) context.getBean(beanId[0]);
+
+    	Boolean hasPayloadContent = testData.containsKey("payloadContent");
+    	if (hasPayloadContent) {
+    		payload = testData.get("payloadContent");
     		
-    	} 
+    	}
     	
-    	Boolean payloadContent = dataValues.containsKey("payloadContent");
-    	if (payloadContent) {
-    		payload = dataValues.get("payloadContent");
+    	event = getTestEvent(payload);
+		for(String key : testData.keySet()) {
+			if (!key.equals("payloadContent")) {
+				event.setFlowVariable(key, testData.get(key));
+				
+			}	
+
+		}
+
+		return event;
+    	
+    }
+    
+    /**
+     * Generates the MuleEvent to be consumed by the Flow either from a Map or a POJO beanId.
+     * 
+     * payloadContent convention: Objects that can only be passed to the operation 
+     * using the payload should be referenced by a payloadContent for this method to 
+     * load them in the payload of the MuleMessage.
+     * 
+     * Case beanId is a Map: Map is retrieved from the Spring context and transformed into MuleEvent.
+     * Case beanId is POJO: POJO is retrieved from the Spring context and set as the MuleEvent payload.
+     * 
+     * @param beanId id of a Map Spring bean or a Bean that is declared on the AutomationSpringBeans file
+     * @return MuleEvent to be passed to the flow invocation.
+     * @throws Exception
+     */
+    private MuleEvent generateMuleEvent(String beanId) throws Exception {
+    	MuleEvent event;
+    	Object payload = null;
+    	Map<String,Object> operationAttributesValues = new HashMap<String,Object>() ;
+    	Boolean hasPayloadContent;
+    	
+    	Object bean = context.getBean(beanId);
+    	
+    	if (bean instanceof Map) {  
+			operationAttributesValues = (HashMap<String,Object>) bean;
+		
+		} else {
+			payload = bean;
+    		
+    	}
+    	
+		hasPayloadContent = operationAttributesValues.containsKey("payloadContent");
+    	if (hasPayloadContent) {
+    		payload = operationAttributesValues.get("payloadContent");
     		
     	}
 
     	event = getTestEvent(payload);
-		for(String key : dataValues.keySet()) {	
-			event.setFlowVariable(key, dataValues.get(key));
+		for(String key : operationAttributesValues.keySet()) {
+			if (!key.equals("payloadContent")) {
+				event.setFlowVariable(key, operationAttributesValues.get(key));
+				
+			}	
 
 		}
-		
-		if (payloadContent) {
-			event.removeFlowVariable("payloadContent");
-    		
-    	}
 
 		return event;
     	
@@ -156,16 +196,19 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		testData.putAll(data);
 	}
 	
+    /**
+     * If beanId belongs to a POJO it is set as payloadContent.
+     */
     protected void initializeTestRunMessage(String beanId) {
 		Object bean = context.getBean(beanId);
 		testData.clear();
 		if (bean instanceof Map) {
 			testData.putAll((Map<String, Object>) context.getBean(beanId));
 		} else {
-			testData.put(beanId, bean);
+			testData.put("payloadContent", bean);
 		}
     }
- 
+
 	public void initializeTestRunMessage(String key, Object value) {
 		testData.clear();
 		testData.put(key, value);
@@ -197,7 +240,11 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 	public void upsertOnTestRunMessage(Map<String,Object> data) {
 		testData.putAll(data);
 	}
-
+	
+	public void upsertPayloadContentOnTestRunMessage(Object payloadContent) {
+		upsertOnTestRunMessage("payloadContent", payloadContent);
+	}
+	
 	public <T> T getTestRunMessageValue(String key) {
 		return (T) testData.get(key);
 	}

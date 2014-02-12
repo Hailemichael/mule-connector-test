@@ -31,6 +31,7 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     
     private static Map<String, Object> aMap;
     private static Map<String, Object> anotherMap;
+    private static String pojoValue;
     
     
     @Rule
@@ -40,6 +41,7 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
 	public void setUp() {
 		aMap = (HashMap<String, Object>) testContext.getBean("aMap");
     	anotherMap = (HashMap<String, Object>) testContext.getBean("anotherMap");
+    	pojoValue = ((Integer) testContext.getBean("aPOJO")).toString();
     }
       
     @Test
@@ -55,38 +57,56 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     }
     
     @Test
-    public void testInitializeTestRunMessageFromBeanId()  {
+    public void testInitializeTestRunMessageFromMapBeanId()  {
         initializeTestRunMessage("aMap");
         assertEquals(aMap.get("key"), getTestRunMessageValue("key"));      
     }
     
     @Test
+    public void testInitializeTestRunMessageFromPOJOBeanId()  {
+        initializeTestRunMessage("aPOJO");      
+        assertEquals(pojoValue, getTestRunMessageValue("payloadContent").toString());
+    }
+    
+    @Test
     public void testRunFlowAndGetMessageFromTestRunMessage() throws Exception {
     	initializeTestRunMessage("aMap");
-        MuleMessage message = runFlowAndGetMessage("test-get-payload");
+        MuleMessage message = runFlowAndGetMessage("test-maps-as-beans");
         assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), message.getPayload().toString());   
     }
     
     @Test
-    public void testRunFlowAndGetMessagePassingBeanId() throws Exception {
-        MuleMessage message = runFlowAndGetMessage("test-get-payload", "aMap");
+    public void testRunFlowAndGetMessagePassingMapBeanId() throws Exception {
+        MuleMessage message = runFlowAndGetMessage("test-maps-as-beans", "aMap");
         assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), message.getPayload().toString());
         assertFalse(getTestRunMessageKeySet().containsAll(aMap.keySet()));
     }
     
     @Test
+    public void testRunFlowAndGetMessagePassingPOJOBeanId() throws Exception {
+        MuleMessage message = runFlowAndGetMessage("test-pojo-as-bean", "aPOJO");
+        assertEquals(pojoValue, message.getPayload().toString());
+    }
+    
+    @Test
     public void testRunFlowAndGetPayloadFromTestRunMessage() throws Exception {
     	initializeTestRunMessage("aMap");
-        String payload = runFlowAndGetPayload("test-get-payload");
+        String payload = runFlowAndGetPayload("test-maps-as-beans");
         assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), payload);   
     }
     
     @Test
-    public void testRunFlowAndGetPayloadPassingBeanId() throws Exception {
-    	String payload = runFlowAndGetPayload("test-get-payload", "aMap");
+    public void testRunFlowAndGetPayloadPassingMapBeanId() throws Exception {
+    	String payload = runFlowAndGetPayload("test-maps-as-beans", "aMap");
         assertEquals(String.format("%s|%s", aMap.get("aMapKey").toString(), anotherMap.get("anotherMapKey").toString()), payload);
         assertFalse(getTestRunMessageKeySet().containsAll(aMap.keySet()));
     }  
+    
+    @Test
+    public void testRunFlowAndGetPayloadPassingPOJOBeanId() throws Exception {
+        Integer payload = runFlowAndGetPayload("test-pojo-as-bean", "aPOJO");
+        assertEquals(pojoValue, payload.toString());
+    }
 
     /**
      * Test runFlow throws the actual cause and not a MessagingException
