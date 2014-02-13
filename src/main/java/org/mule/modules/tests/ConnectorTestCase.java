@@ -225,7 +225,11 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     
     public void upsertBeanFromContextOnTestRunMessage(String beanId) {
 		Object bean = getBeanFromContext(beanId);
-		testData.put(beanId, bean);
+		if (bean instanceof Map) {
+			testData.putAll((Map<String, Object>) context.getBean(beanId));
+		} else {
+			testData.put("payloadContent", bean);
+		}
     }
     
     public void upsertBeanFromContextOnTestRunMessage(String key,String beanId) {
@@ -243,6 +247,16 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 	
 	public void upsertPayloadContentOnTestRunMessage(Object payloadContent) {
 		upsertOnTestRunMessage("payloadContent", payloadContent);
+	}
+	
+	public <T> T getTestRunMessagePayload() {
+		Object payloadContent = null;	
+		if (testData.containsKey("payloadContent")) {
+			payloadContent = testData.get("payloadContent");
+		} 
+		
+		return (T) payloadContent;
+		
 	}
 	
 	public <T> T getTestRunMessageValue(String key) {
