@@ -38,7 +38,7 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     public ExpectedException thrownException = ExpectedException.none();
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		aMap = (HashMap<String, Object>) testContext.getBean("aMap");
     	anotherMap = (HashMap<String, Object>) testContext.getBean("anotherMap");
     	pojoValue = ((Integer) testContext.getBean("aPOJO")).toString();

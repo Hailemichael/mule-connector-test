@@ -47,7 +47,8 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     	try {
     		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
         } catch (Exception e) {
-            LOGGER.warn("Spring beans file was not found. Couldn't create the context for ConnectorTestParent.");
+        	LOGGER.fatal("Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.");
+        	LOGGER.fatal(String.format("Exception message is: %s", e.getMessage()));
         }
     }
     
@@ -168,7 +169,14 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     }
     
     protected Flow lookupFlowConstruct(String name) {
-        return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
+		Flow flow = null;
+    	try {
+    		flow = (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
+    	} catch (Exception e) {
+    		LOGGER.fatal(e.getMessage());
+    	}
+    	
+        return flow;
     }
     
     /**
@@ -214,9 +222,13 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		testData.put(key, value);
 	}
     
-	public void initializeTestRunMessage(Map<String,Object> data) {
+	public void initializeTestRunMessage(Object data) {
 		testData.clear();
-		testData.putAll(data);
+		if (data instanceof Map) {
+			testData.putAll((Map<String, Object>) data);
+		} else {
+			testData.put("payloadContent", data);
+		};
 	}
    
     public <T> T getBeanFromContext(String beanId) throws BeansException {
