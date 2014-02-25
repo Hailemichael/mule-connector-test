@@ -173,6 +173,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     	try {
     		flow = (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     	} catch (Exception e) {
+    		// Need to add better information to the user in case of errors.
     		LOGGER.fatal(e.getMessage());
     	}
     	
@@ -206,6 +207,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 	
     /**
      * If beanId belongs to a POJO it is set as payloadContent.
+     * What if Map needs to be set as payload, needs to be analysed.
      */
     protected void initializeTestRunMessage(String beanId) {
 		Object bean = context.getBean(beanId);

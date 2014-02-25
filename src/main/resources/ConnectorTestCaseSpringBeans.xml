@@ -15,9 +15,15 @@
 	<bean id="randomEmailAddress" class="org.mule.modules.tests.ConnectorTestUtils"
 		factory-method="generateRandomEmailAddress" scope="prototype" />
 	
+	<bean id="randomShortString" class="org.mule.modules.tests.ConnectorTestUtils"
+		factory-method="generateRandomShortString" scope="prototype" />
+	
 	<bean id="xmlGregorianCalendarDateInThePast" class="org.mule.modules.tests.ConnectorTestUtils"
 		factory-method="generateXMLGregorianCalendarDateForMinutesBeforeCurrent" scope="prototype" >
 		<constructor-arg value="5" />
 	</bean>
+	
+	
+	
                       
 </beans>
