@@ -289,7 +289,16 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		return testData.keySet();
 	}   
 
-
+	@Override
+	@Deprecated
+	protected final MuleEvent runFlow(String flowName) throws Exception {
+		throw new RuntimeException("runFlow() method from FunctionalTestCase is deprecated. Use runFlowIgnoringPayload() instead.");
+	}
+	
+	protected void runFlowIgnoringPayload(String flowName) throws Exception {
+		runFlowAndGetPayload(flowName);
+	}
+	
 	/**
 	 * TestRunMessage is already loaded with values for the operation
 	 * @param flowName
