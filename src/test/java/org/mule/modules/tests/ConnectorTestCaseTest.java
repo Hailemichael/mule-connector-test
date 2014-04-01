@@ -13,6 +13,7 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,7 +33,6 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     private static Map<String, Object> aMap;
     private static Map<String, Object> anotherMap;
     private static String pojoValue;
-    
     
     @Rule
     public ExpectedException thrownException = ExpectedException.none();
@@ -116,5 +116,12 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     public void testGettingException() throws Exception {
         thrownException.expect(org.mule.api.transformer.TransformerMessagingException.class);
         runFlowAndGetPayload("test-exception");
+    }
+
+    @Test
+    public void testInboundEndpointFlow() throws Exception {
+        String message = UUID.randomUUID().toString();
+        upsertOnTestRunMessage("payload", message);
+        assertEquals(message, runFlowAndWaitForResponseVM("sendFlow", "collectVm", 1000));
     }
 }
