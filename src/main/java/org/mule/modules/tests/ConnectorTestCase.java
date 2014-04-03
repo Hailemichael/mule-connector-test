@@ -476,5 +476,9 @@ public class ConnectorTestCase extends FunctionalTestCase {
     	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
         return (T) response.getMessage().getPayload();
     }
+    
+    protected void runFlowIgnoringPayload(String flowName) throws Exception {
+		runFlowAndGetPayload(flowName);
+	}
 
 }
