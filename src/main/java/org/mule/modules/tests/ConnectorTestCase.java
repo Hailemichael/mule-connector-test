@@ -8,7 +8,6 @@
 
 package org.mule.modules.tests;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -19,7 +18,6 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -36,7 +34,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 
 /**
@@ -68,18 +65,6 @@ public class ConnectorTestCase extends FunctionalTestCase {
 		LOGGER.fatal(message);
 		System.exit(1);
 	
-	}
-	
-	private static void verifyAutomationCredentials()  {
-		if (!automationCredentials.isEmpty()) {
-			for (String name : automationCredentials.stringPropertyNames()) {
-				if ((automationCredentials.getProperty(name)).isEmpty()) {
-					terminateTestRun(CREDENTIALS_VALUE_MISSING);
-				}
-			}
-		} else {
-			terminateTestRun(EMPTY_CREDENTIALS_FILE);
-		}	
 	}
 	
 	private static void loadTestFlows()  {
@@ -135,26 +120,38 @@ public class ConnectorTestCase extends FunctionalTestCase {
  
     @BeforeClass
     public static void beforeClass() { 
-    	SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
+    	initializeSpringApplicationContext();
+    	
+    	loadAndVerifyAutomationCredentials();
+		loadTestFlows();  
+
+    }
+
+	private static void initializeSpringApplicationContext() {
+		SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
     	try {
     		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
-    		try {
-				automationCredentials = (Properties) context.getBean("automationCredentials");
-			// automationCredentials not found
-            } catch (BeansException e) {	
-            	terminateTestRun(e.getMessage());	
-            }
-    		
-    		verifyAutomationCredentials();
-    		// verify automation-test-flows file is found.
-    		loadTestFlows();  
-    		
-	    // Spring beans file not found 
         } catch (BeansException e) {	
         	terminateTestRun(SPRINGBEANS_NOT_INITIALIZED);
         }
+	}
 
-    }
+	private static void loadAndVerifyAutomationCredentials() {
+		try {
+			automationCredentials = (Properties) context.getBean("automationCredentials");
+		} catch (BeansException e) {	
+			terminateTestRun(e.getMessage());	
+		}	
+		if (!automationCredentials.isEmpty()) {
+			for (String name : automationCredentials.stringPropertyNames()) {
+				if ((automationCredentials.getProperty(name)).isEmpty()) {
+					terminateTestRun(CREDENTIALS_VALUE_MISSING);
+				}
+			}
+		} else {
+			terminateTestRun(EMPTY_CREDENTIALS_FILE);
+		}	
+	}
 
 	@Before
     public final void clearTestData() {
