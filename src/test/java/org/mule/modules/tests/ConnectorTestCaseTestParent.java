@@ -8,9 +8,6 @@
 
 package org.mule.modules.tests;
 
-import java.util.LinkedList;
-
-import org.junit.Before;
 
 public class ConnectorTestCaseTestParent extends ConnectorTestCase {
 

@@ -8,14 +8,23 @@
 
 package org.mule.modules.tests;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.log4j.Logger;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runners.model.InitializationError;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.construct.Flow;
@@ -23,6 +32,11 @@ import org.mule.tck.junit4.FunctionalTestCase;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -31,25 +45,121 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author Mulesoft, Inc
  */
 @SuppressWarnings("unchecked")
-public abstract class ConnectorTestCase extends FunctionalTestCase {
+public class ConnectorTestCase extends FunctionalTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(ConnectorTestCase.class);
 
     protected static final String DEFAULT_SPRING_CONFIG_FILE = "AutomationSpringBeans.xml";
     protected static List<String> SPRING_CONFIG_FILES = new LinkedList<String>();    
-
-	private Map<String, Object> testData = new HashMap<String, Object>();
+    
+    
+    private final static String EMPTY_CREDENTIALS_FILE = "Credentials file is empty";
+    private final static String CREDENTIALS_VALUE_MISSING = "Credentials key is missing its value";
+    private final static String SPRINGBEANS_NOT_INITIALIZED = "Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.";
+    private final static String TESTRUNMESSAGE_NOT_INITIALIZED = "TestRunMessage was not initialized for current test.";
+    
+	private Map<String, Object> testData = null;
 	private static ApplicationContext context;
+	
+	protected static Properties automationCredentials;
+	private static List<String> testFlowsNames = new LinkedList<String>();
 
+	private static void terminateTestRun(String message) {
+		LOGGER.fatal(message);
+		System.exit(1);
+	
+	}
+	
+	private static void verifyAutomationCredentials()  {
+		if (!automationCredentials.isEmpty()) {
+			for (String name : automationCredentials.stringPropertyNames()) {
+				if ((automationCredentials.getProperty(name)).isEmpty()) {
+					terminateTestRun(CREDENTIALS_VALUE_MISSING);
+				}
+			}
+		} else {
+			terminateTestRun(EMPTY_CREDENTIALS_FILE);
+		}	
+	}
+	
+	private static void loadTestFlows()  {
+    	
+    	DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		documentBuilderFactory.setNamespaceAware(true);
+	
+		DocumentBuilder documentBuilder;
+		Document testFlowsDocument = null;
+		NodeList flowsList;
+		
+		try {
+			documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			InputStream dataStream = Thread.currentThread().getContextClassLoader().getResourceAsStream((new ConnectorTestCase()).getConfigResources());
+			testFlowsDocument = documentBuilder.parse(dataStream);
+
+		} catch (Exception e) {
+			terminateTestRun(e.getMessage());
+		} 
+		
+		flowsList = testFlowsDocument.getElementsByTagName("flow");
+		for(int flowIndex = 0; flowIndex < flowsList.getLength(); flowIndex++) {
+			Node flow = flowsList.item(flowIndex);
+			
+			if (flow.getNodeType() == Node.ELEMENT_NODE) { 
+				Element flowElement = (Element) flow;
+				testFlowsNames.add(flowElement.getAttribute("name"));
+			}
+		}
+
+	}
+	
+    private void verifyValidFlowName(String flowName) throws Exception {
+    	if (!(testFlowsNames.contains(flowName))) {
+    		throw (new Exception());
+    	}	
+	}
+    
+    private void verifyValidBeanId(String beanId) throws Exception {
+    	if (!(context.containsBean(beanId))) {
+    		throw (new Exception());
+    	}	
+	}
+	
+    private void preInvokationVerifications(String flowName, String ... beanId) throws Exception {
+    	verifyTestRunMessageIsInitialized();
+    	verifyValidFlowName(flowName);
+    	if (beanId.length > 0) {
+    		verifyValidBeanId(beanId[0]);
+    	}	
+    }
+        	
+ 
     @BeforeClass
-    public static void beforeClass(){  	
+    public static void beforeClass() { 
     	SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
     	try {
     		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
-        } catch (Exception e) {
-        	LOGGER.fatal("Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.");
-        	LOGGER.fatal(String.format("Exception message is: %s", e.getMessage()));
+    		try {
+				automationCredentials = (Properties) context.getBean("automationCredentials");
+			// automationCredentials not found
+            } catch (BeansException e) {	
+            	terminateTestRun(e.getMessage());	
+            }
+    		
+    		verifyAutomationCredentials();
+    		// verify automation-test-flows file is found.
+    		loadTestFlows();  
+    		
+	    // Spring beans file not found 
+        } catch (BeansException e) {	
+        	terminateTestRun(SPRINGBEANS_NOT_INITIALIZED);
         }
+
+    }
+
+	@Before
+    public final void clearTestData() {
+    	testData = null;
+    	
     }
     
     protected static String[] getConfigSpringFiles() {
@@ -82,18 +192,20 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     protected String getConfigXmlFile() {
         return "automation-test-flows.xml";
     }
+    
+    protected void verifyTestRunMessageIsInitialized() throws Exception {
+    	if (testData == null) {
+    		throw new InitializationError(TESTRUNMESSAGE_NOT_INITIALIZED); 
+    	}
+    }
 
     /**
-     * Generates the MuleEvent to be consumed by the Flow from the TestRunMessage.
+     * Generates the MuleEvent that's processed by the Flow based on the data on the TestRunMessage.
      * 
+     * testData stored key/value pairs are set as flowVars in the MuleEvent with the exception 
+     * of "payloadContent" whose content will be set as payload of the MuleMessage.
      * 
-     * payloadContent convention: Objects that can only be passed to the operation 
-     * using the payload should be referenced by a payloadContent for this method to 
-     * load them in the payload of the MuleMessage.
-     * 
-     * Current testData values are transformed into a MuleEvent.
-     * 
-     * @return MuleEvent to be passed to the flow invocation.
+     * @return MuleEvent to be processed to the Flow.
      * @throws Exception
      */
     private MuleEvent generateMuleEvent() throws Exception {
@@ -120,16 +232,15 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     }
     
     /**
-     * Generates the MuleEvent to be consumed by the Flow either from a Map or a POJO beanId.
+     * Generates the MuleEvent that's processed by the Flow either from a Map or a POJO from the Spring context.
+     * This method is used by the runFlowAndGetPayload/Message methods that run without using the TestRunMessage.
      * 
-     * payloadContent convention: Objects that can only be passed to the operation 
-     * using the payload should be referenced by a payloadContent for this method to 
-     * load them in the payload of the MuleMessage.
+     * In case the beanId is a "TestData" Map
+     * 	Map is retrieved from the Spring context and its values transformed into MuleEvent flowVars .
+     * Case beanId is POJO or "Non-TestData" Map
+     * 	POJO or "Non-TestData" Map is retrieved from the Spring context and set as the MuleMessage payload.
      * 
-     * Case beanId is a Map: Map is retrieved from the Spring context and transformed into MuleEvent.
-     * Case beanId is POJO: POJO is retrieved from the Spring context and set as the MuleEvent payload.
-     * 
-     * @param beanId id of a Map Spring bean or a Bean that is declared on the AutomationSpringBeans file
+     * @param beanId id of a Spring bean that is declared on the AutomationSpringBeans file.
      * @return MuleEvent to be passed to the flow invocation.
      * @throws Exception
      */
@@ -139,9 +250,10 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     	Map<String,Object> operationAttributesValues = new HashMap<String,Object>() ;
     	Boolean hasPayloadContent;
     	
-    	Object bean = context.getBean(beanId);
+    	Object bean = context.getBean(beanId);   	
     	
-    	if (bean instanceof Map) {  
+    	
+    	if ((bean instanceof Map) && (beanId.endsWith("TestData"))) {  
 			operationAttributesValues = (HashMap<String,Object>) bean;
 		
 		} else {
@@ -173,10 +285,8 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
     	try {
     		flow = (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     	} catch (Exception e) {
-    		// Need to add better information to the user in case of errors.
     		LOGGER.fatal(e.getMessage());
-    	}
-    	
+    	} 	
         return flow;
     }
     
@@ -205,27 +315,35 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
 		testData.putAll(data);
 	}
 	
+    protected void initializeTestRunMessage() {
+		testData = new HashMap<String, Object>();
+    }
+    
     /**
      * If beanId belongs to a POJO it is set as payloadContent.
      * What if Map needs to be set as payload, needs to be analysed.
      */
     protected void initializeTestRunMessage(String beanId) {
-		Object bean = context.getBean(beanId);
-		testData.clear();
-		if (bean instanceof Map) {
+    	testData = new HashMap<String, Object>();
+    	
+    	Object bean = context.getBean(beanId);
+		if ((bean instanceof Map) && (beanId.endsWith("TestData"))) {
 			testData.putAll((Map<String, Object>) context.getBean(beanId));
 		} else {
 			testData.put("payloadContent", bean);
 		}
     }
 
+    /**
+     * Use payloadContent as key if you want a Map to be stored in the payload
+     */
 	public void initializeTestRunMessage(String key, Object value) {
-		testData.clear();
+		testData = new HashMap<String, Object>();
 		testData.put(key, value);
 	}
     
 	public void initializeTestRunMessage(Object data) {
-		testData.clear();
+		testData = new HashMap<String, Object>();
 		if (data instanceof Map) {
 			testData.putAll((Map<String, Object>) data);
 		} else {
@@ -297,6 +415,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
+    	preInvokationVerifications(flowName);
         MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
         return (T) response.getMessage().getPayload();
     }
@@ -309,18 +428,19 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected MuleMessage runFlowAndGetMessage(String flowName) throws Exception {
-        MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
-        return response.getMessage();
+    	preInvokationVerifications(flowName);
+    	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
+    	return response.getMessage();
     }
-    
 
-    /**
+	/**
      * @param flowName
      * @param invocationProperty
      * @return
      * @throws Exception
      */
     protected <T> T runFlowAndGetInvocationProperty(String flowName, String invocationProperty) throws Exception {
+    	preInvokationVerifications(flowName);
         return (T) ((MuleMessage) runFlowAndGetMessage(flowName)).getInvocationProperty(invocationProperty);
     }
 
@@ -335,6 +455,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
+    	preInvokationVerifications(flowName, beanId);
     	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
         return response.getMessage();
     }
@@ -351,6 +472,7 @@ public abstract class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected <T> T runFlowAndGetPayload(String flowName, String beanId) throws Exception {
+    	preInvokationVerifications(flowName, beanId);
     	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
         return (T) response.getMessage().getPayload();
     }

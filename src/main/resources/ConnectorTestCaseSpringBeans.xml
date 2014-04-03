@@ -22,8 +22,19 @@
 		factory-method="generateXMLGregorianCalendarDateForMinutesBeforeCurrent" scope="prototype" >
 		<constructor-arg value="5" />
 	</bean>
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="ignoreUnresolvablePlaceholders" value="true"/>
+	</bean> 
 	
-	
-	
+	<bean id="automationCredentials" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+	   <property name="ignoreResourceNotFound" value="true"/>
+	   <property name="locations">
+	      <list>
+	      	<value>${AUTOMATION_CREDENTIALS}</value>
+	        <value>classpath:automation-credentials.properties</value>
+	      </list>
+	   </property>
+	</bean>
                       
 </beans>
