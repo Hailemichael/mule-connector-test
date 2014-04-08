@@ -9,7 +9,6 @@
 package org.mule.modules.tests;
 
 import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertFalse;
 
 import java.util.HashMap;
@@ -25,7 +24,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * @author Mulesoft, Inc.
+ * @author MuleSoft, Inc.
  */
 public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
 
@@ -139,7 +138,7 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     @Test
     public void testInboundEndpointFlow() throws Exception {
         String message = UUID.randomUUID().toString();
-        upsertOnTestRunMessage("payload", message);
+        initializeTestRunMessage("payload", message);
         assertEquals(message, runFlowAndWaitForResponseVM("sendFlow", "collectVm", 1000));
     }
     
