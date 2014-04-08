@@ -82,7 +82,7 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     }
     
     @Test
-    public void testRunFlowAndGetMessageFromTestRunMessage() throws Exception {
+    public void testRunFlowAndGetMessageConsumingTestRunMessage() throws Exception {
     	initializeTestRunMessage("aMapTestData");
         MuleMessage message = runFlowAndGetMessage("test-maps-as-beans");
         assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), message.getPayload().toString());   
@@ -104,7 +104,7 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     }
     
     @Test
-    public void testRunFlowAndGetPayloadFromTestRunMessage() throws Exception {
+    public void testRunFlowAndGetPayloadConsumingTestRunMessage() throws Exception {
     	initializeTestRunMessage("aMapTestData");
         String payload = runFlowAndGetPayload("test-maps-as-beans");
         assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), payload);   
@@ -158,7 +158,6 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
     public void testRunFlowAndGetPayloadInitializationException() throws Exception {
         thrownException.expect(org.junit.runners.model.InitializationError.class);
         runFlowAndGetPayload("test-maps-as-beans");
-    } 
-    
+    }
     
 }

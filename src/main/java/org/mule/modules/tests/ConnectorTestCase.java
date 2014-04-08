@@ -8,6 +8,7 @@
 
 package org.mule.modules.tests;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -18,8 +19,10 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
+import org.apache.mina.core.RuntimeIoException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runners.model.InitializationError;
@@ -34,6 +37,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -44,30 +48,29 @@ import org.w3c.dom.NodeList;
 @SuppressWarnings("unchecked")
 public class ConnectorTestCase extends FunctionalTestCase {
 
-    private static final Logger LOGGER = Logger.getLogger(ConnectorTestCase.class);
+    private static final String AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND = "automationCredentials bean not found. Check that ConnectorTestCaseSpringBeans.xml was imported.";
+
+	private static final Logger LOGGER = Logger.getLogger(ConnectorTestCase.class);
 
     protected static final String DEFAULT_SPRING_CONFIG_FILE = "AutomationSpringBeans.xml";
     protected static List<String> SPRING_CONFIG_FILES = new LinkedList<String>();    
     
     
     private final static String EMPTY_CREDENTIALS_FILE = "Credentials file is empty";
-    private final static String CREDENTIALS_VALUE_MISSING = "Credentials key is missing its value";
     private final static String SPRINGBEANS_NOT_INITIALIZED = "Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.";
+    private final static String TEST_FLOWS_FILE_NOT_FOUND = "Test flows xml file was not found.";
+    private final static String MALFORMED_TEST_FLOWS_FILE = "Test flows xml is not well formed.";
     private final static String TESTRUNMESSAGE_NOT_INITIALIZED = "TestRunMessage was not initialized for current test.";
+    private final static String FLOW_NOT_FOUND = "Flow not found on flow file.";
+    private final static String BEAN_NOT_FOUND = "Bean not found on Spring beans file.";
     
 	private Map<String, Object> testData = null;
 	private static ApplicationContext context;
 	
 	protected static Properties automationCredentials;
 	private static List<String> testFlowsNames = new LinkedList<String>();
-
-	private static void terminateTestRun(String message) {
-		LOGGER.fatal(message);
-		System.exit(1);
 	
-	}
-	
-	private static void loadTestFlows()  {
+	protected static void loadTestFlows(String configResources) {
     	
     	DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		documentBuilderFactory.setNamespaceAware(true);
@@ -78,12 +81,15 @@ public class ConnectorTestCase extends FunctionalTestCase {
 		
 		try {
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
-			InputStream dataStream = Thread.currentThread().getContextClassLoader().getResourceAsStream((new ConnectorTestCase()).getConfigResources());
+			InputStream dataStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(configResources);
 			testFlowsDocument = documentBuilder.parse(dataStream);
-
-		} catch (Exception e) {
-			terminateTestRun(e.getMessage());
-		} 
+		} catch (IOException e) {
+			throw new RuntimeIoException(TEST_FLOWS_FILE_NOT_FOUND);
+		} catch (ParserConfigurationException e) {
+			throw new RuntimeIoException(MALFORMED_TEST_FLOWS_FILE);
+		} catch (SAXException e) {
+			throw new RuntimeException();
+		}
 		
 		flowsList = testFlowsDocument.getElementsByTagName("flow");
 		for(int flowIndex = 0; flowIndex < flowsList.getLength(); flowIndex++) {
@@ -96,69 +102,41 @@ public class ConnectorTestCase extends FunctionalTestCase {
 		}
 
 	}
+        	
+	private static void initializeSpringApplicationContext() throws BeansException {
+		SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
+		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
+	}
+
+	private static void loadAndVerifyAutomationCredentials() throws Exception {
+		automationCredentials = (Properties) context.getBean("automationCredentials");
+		if (automationCredentials.isEmpty()) {
+			throw new Exception(EMPTY_CREDENTIALS_FILE);
+		}
 	
-    private void verifyValidFlowName(String flowName) throws Exception {
-    	if (!(testFlowsNames.contains(flowName))) {
-    		throw (new Exception());
-    	}	
 	}
     
-    private void verifyValidBeanId(String beanId) throws Exception {
-    	if (!(context.containsBean(beanId))) {
-    		throw (new Exception());
-    	}	
-	}
-	
-    private void preInvokationVerifications(String flowName, String ... beanId) throws Exception {
-    	verifyTestRunMessageIsInitialized();
-    	verifyValidFlowName(flowName);
-    	if (beanId.length > 0) {
-    		verifyValidBeanId(beanId[0]);
-    	}	
-    }
-        	
- 
     @BeforeClass
-    public static void beforeClass() { 
-    	initializeSpringApplicationContext();
-    	
-    	loadAndVerifyAutomationCredentials();
-		loadTestFlows();  
-
-    }
-
-	private static void initializeSpringApplicationContext() {
-		SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
+    public static void setUpBeforeClass() throws Exception { 
     	try {
-    		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
-        } catch (BeansException e) {	
-        	terminateTestRun(SPRINGBEANS_NOT_INITIALIZED);
-        }
-	}
-
-	private static void loadAndVerifyAutomationCredentials() {
-		try {
-			automationCredentials = (Properties) context.getBean("automationCredentials");
-		} catch (BeansException e) {	
-			terminateTestRun(e.getMessage());	
-		}	
-		if (!automationCredentials.isEmpty()) {
-			for (String name : automationCredentials.stringPropertyNames()) {
-				if ((automationCredentials.getProperty(name)).isEmpty()) {
-					terminateTestRun(CREDENTIALS_VALUE_MISSING);
-				}
-			}
-		} else {
-			terminateTestRun(EMPTY_CREDENTIALS_FILE);
-		}	
-	}
+    		initializeSpringApplicationContext();
+    		try {
+    			loadAndVerifyAutomationCredentials();
+    		} catch (BeansException e) {
+    			throw new Exception(AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND);
+    		}
+    	} catch (BeansException e) {
+    		throw new Exception(SPRINGBEANS_NOT_INITIALIZED); 
+    	}  
+    }
+    
 
 	@Before
     public final void clearTestData() {
     	testData = null;
     	
     }
-    
+	
     protected static String[] getConfigSpringFiles() {
     	return SPRING_CONFIG_FILES.toArray(new String[SPRING_CONFIG_FILES.size()]);
     }
@@ -183,11 +161,33 @@ public class ConnectorTestCase extends FunctionalTestCase {
     
     @Override
     protected String getConfigResources() {
-        return getConfigXmlFile();
+    	String configXmlFile = getConfigXmlFile();
+    	loadTestFlows(configXmlFile);
+        return configXmlFile;
     }
 
     protected String getConfigXmlFile() {
         return "automation-test-flows.xml";
+    }
+    
+    private void verifyValidFlowName(String flowName) throws Exception {
+    	if (!(testFlowsNames.contains(flowName))) {
+    		throw (new Exception(FLOW_NOT_FOUND));
+    	}	
+	}
+    
+    private void verifyValidBeanId(String beanId) throws Exception {
+    	if (!(context.containsBean(beanId))) {
+    		throw (new Exception(BEAN_NOT_FOUND));
+    	}	
+	}
+	
+    private void preInvokationVerifications(String flowName, String ... beanId) throws Exception {
+    	verifyTestRunMessageIsInitialized();
+    	verifyValidFlowName(flowName);
+    	if (beanId.length > 0) {
+    		verifyValidBeanId(beanId[0]);
+    	}	
     }
     
     protected void verifyTestRunMessageIsInitialized() throws Exception {
@@ -248,8 +248,7 @@ public class ConnectorTestCase extends FunctionalTestCase {
     	Boolean hasPayloadContent;
     	
     	Object bean = context.getBean(beanId);   	
-    	
-    	
+    		
     	if ((bean instanceof Map) && (beanId.endsWith("TestData"))) {  
 			operationAttributesValues = (HashMap<String,Object>) bean;
 		

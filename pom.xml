@@ -75,7 +75,7 @@
             <artifactId>junit-dep</artifactId>
             <version>${junit.version}</version>
             <scope>provided</scope>
-        </dependency>
+        </dependency>       
     </dependencies>
 
     <repositories>

@@ -8,22 +8,24 @@
 
 package org.mule.modules.tests;
 
-import org.junit.Test;
-
 import static junit.framework.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * @author Mulesoft, Inc.
  */
 public class AutomationTestFlowsFileTest extends ConnectorTestCaseTestParent {
-
-    @Test
-    public void testOverrideXmlConfig() throws Exception {
-        assertEquals(runFlowAndGetPayload("test"), "Override");
-    }
-
+	
     @Override
     protected String getConfigXmlFile() {
         return "automation-test-flows-override.xml";
     }
+	
+    @Test
+    public void testOverrideXmlConfig() throws Exception {
+    	initializeTestRunMessage();
+        assertEquals(runFlowAndGetPayload("test"), "Override");
+    }
+   
 }
