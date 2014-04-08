@@ -34,11 +34,15 @@ public class ConnectorTestUtils {
 	}
     
     public static String generateRandomEmailAddress() {
-    	return String.format("%s@testaddress.com", UUID.randomUUID().toString().substring(0, 11));  	
+    	return String.format("qaTest%s@testaddress.com", UUID.randomUUID().toString().substring(0, 7));  	
+    }
+    
+    public static int generateRandomInteger(int min, int max) {
+    	return (min + (int)(Math.random() * ((max - min) + 1)));  	
     }
     
     public static String generateRandomShortString() {
-    	return UUID.randomUUID().toString().substring(0, 11);  	
+    	return String.format("qaTest%s", UUID.randomUUID().toString().substring(0, 7));
     }
     
     public static XMLGregorianCalendar generateXMLGregorianCalendarDateForYesterday() throws Exception {
