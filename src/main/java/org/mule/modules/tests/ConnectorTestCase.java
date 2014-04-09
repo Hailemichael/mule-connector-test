@@ -11,8 +11,8 @@ package org.mule.modules.tests;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.runners.model.InitializationError;
+import org.mule.api.MuleContext;
 import org.mule.api.MuleMessage;
-import org.mule.tck.junit4.FunctionalTestCase;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -26,7 +26,7 @@ import java.util.*;
  * @author Mulesoft, Inc
  */
 @SuppressWarnings("unchecked")
-public class ConnectorTestCase extends FunctionalTestCase {
+public class ConnectorTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(ConnectorTestCase.class);
 
@@ -39,7 +39,9 @@ public class ConnectorTestCase extends FunctionalTestCase {
     private final static String SPRINGBEANS_NOT_INITIALIZED = "Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.";
     private final static String TESTRUNMESSAGE_NOT_INITIALIZED = "TestRunMessage was not initialized for current test.";
 
-	private TestData testData = new TestData();
+    private BaseConnectorTestCase baseConnectorTestCase = new BaseConnectorTestCase(getConfigXmlFile());
+    private MuleContext muleContext = baseConnectorTestCase.getMuleContext();
+    private TestData testData = new TestData();
 	private static ApplicationContext context;
 
 	protected static Properties automationCredentials;
@@ -51,9 +53,9 @@ public class ConnectorTestCase extends FunctionalTestCase {
 	}
 
     @BeforeClass
-    public static void beforeClass() {
-    	initializeSpringApplicationContext();
-    	loadAndVerifyAutomationCredentials();
+    public static void beforeClass() throws NoSuchFieldException, IllegalAccessException {
+        initializeSpringApplicationContext();
+        loadAndVerifyAutomationCredentials();
     }
 
 	private static void initializeSpringApplicationContext() {
@@ -104,7 +106,7 @@ public class ConnectorTestCase extends FunctionalTestCase {
     	SPRING_CONFIG_FILES = configFilesLocation;
     }
 
-    @Override
+    // TODO: Keep this for backwards compatibility?
     protected String getConfigResources() {
         return getConfigXmlFile();
     }
@@ -278,7 +280,7 @@ public class ConnectorTestCase extends FunctionalTestCase {
 
     @Deprecated
     protected void initializeTestRunMessage(String beanId) {
-        this.testData = TestData.fromBean(beanId, context);
+        this.testData = TestData.fromBean(beanId, context, this.muleContext);
     }
 
     @Deprecated

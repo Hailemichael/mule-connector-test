@@ -1,11 +1,16 @@
 package org.mule.modules.tests;
 
-import org.mule.api.MuleEvent;
+import org.mule.api.MuleContext;
 import org.springframework.context.ApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A representation of the TestRunMessage, which consists of flow variables
+ * and the message's payload. Its contents can be accessed in a flow
+ * through Mule Expression Language (MEL) expressions.
+ */
 public class TestData {
 
     private Map<String, Object> flowVars = new HashMap<String, Object>();
@@ -14,7 +19,6 @@ public class TestData {
     /**
      * Helper method to migrate test data in the "old" format (payload stored
      * as the value assigned to "payloadContent" in a map).
-     * <p>This method only exists to provide backwards compatibility and should be removed when possible.</p>
      * @param oldData The map from which to create the test run message.
      * @return A complete TestData object resulting from the specified map.
      */
@@ -42,27 +46,16 @@ public class TestData {
      * If not, the entire map is set as the payload and no flow variables are set.
      * </p>
      * @param beanId The name of the bean
-     * @param context
+     * @param context The current Mule context
      * @return
      */
-    static TestData fromBean(String beanId, ApplicationContext context) {
+    static TestData fromBean(String beanId, ApplicationContext context, MuleContext muleContext) {
         Object bean = context.getBean(beanId);
         if (bean instanceof Map && beanId.endsWith("TestData")) {
             return TestData.fromMap((Map) bean);
         } else {
             return new TestData().setPayload(bean);
         }
-    }
-
-    /**
-     * Generates a MuleEvent from the defined payload and flow variables.
-     */
-    MuleEvent getMuleEvent() throws Exception {
-        MuleEvent event = ConnectorTestCase.getTestEvent(this.payload);
-        for (String key : this.flowVars.keySet()) {
-            event.setFlowVariable(key, this.flowVars.get(key));
-        }
-        return event;
     }
 
     /**
@@ -93,17 +86,16 @@ public class TestData {
     }
 
     /**
-     * Returns a mapping of flow variable names to their contents.
-     * @return
+     * @return A mapping of flow variable names to their contents.
      */
     public Map<String, Object> getFlowVars() {
         return this.flowVars;
     }
 
     /**
-     * Replaces all the flow variables with a map
-     * @param flowVars A mapping of flow variable names to their contents
-     * @return The modified test run message
+     * Replaces all the flow variables with a map.
+     * @param flowVars A mapping of flow variable names to their contents.
+     * @return The modified test run message.
      */
     public TestData setFlowVars(Map<String, Object> flowVars) {
         this.flowVars = flowVars;
@@ -114,17 +106,28 @@ public class TestData {
      * Adds all the flow variables given by a map. If a flow variable already exists,
      * it is updated with the new value. If not, it is created.
      * @param flowVars
-     * @return
+     * @return The modified test run message.
      */
     public TestData addFlowVars(Map<String, Object> flowVars) {
         this.flowVars.putAll(flowVars);
         return this;
     }
 
+    /**
+     * @return The payload associated to this TestRunMessage object. It can be
+     * accessed in a flow by using a MEL expression, as such: {@code #[payload]}
+     */
     public <T> T getPayload() {
         return (T) this.payload;
     }
 
+
+    /**
+     * Sets the payload of this test run message object, which can be accessed
+     * in a flow through a MEL expression: {@code #[payload]}
+     * @param payload The payload object to set.
+     * @return The modified test run message object.
+     */
     public TestData setPayload(Object payload) {
         this.payload = payload;
         return this;
