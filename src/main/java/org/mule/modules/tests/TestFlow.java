@@ -17,12 +17,12 @@ public class TestFlow {
 
     TestFlow(MuleContext muleContext, ApplicationContext context, String flowName, TestData testData) throws InitializationError {
         this.testData = testData;
+        this.context = context;
+        this.muleContext = muleContext;
         this.flow = (Flow) muleContext.getRegistry().lookupFlowConstruct(flowName);
         if (this.flow == null) {
             throw new InitializationError("Flow named " + flowName + " does not exist");
         }
-        this.context = context;
-        this.muleContext = muleContext;
     }
 
     private MuleEvent getTestEvent(Object payload) throws Exception {
@@ -38,15 +38,12 @@ public class TestFlow {
     }
 
     /**
-     * Executes this flow with the currently loaded TestRunMessage, which can be accessed and
-     * modified through {@code getTestRunMessage()}.
+     * Executes this flow with the currently loaded TestData, which can be accessed and
+     * modified through {@code getTestData()}.
      * @return A {@link TestFlowResult} object containing the result of running this flow.
      * @throws Exception
      */
     public TestFlowResult run() throws Exception {
-        if (testData == null) {
-            throw new InitializationError("Could not run flow " + this.flow.getName() + ", test data not initialized");
-        }
         // TODO: What to do with exception here? Throw as-is or modify?
         MuleEvent response = this.flow.process(getMuleEvent(testData));
         return new TestFlowResult(this, this.testData, response);
@@ -54,26 +51,26 @@ public class TestFlow {
 
     /**
      * Convenience method to run this flow using the specified bean as the TestRunMessage.
-     * <p>If the bean ID ends with "testData", the value of each key is set as a flow variable.
+     * <p>If the bean ID ends with "TestData", the value of each key is set as a flow variable.
      * If there is {@code payloadContent} key, its value will be set as the payload.</p>
      * @param beanId The bean ID to set as the payload.
      * @return A {@link TestFlowResult} object containing the result of running this flow.
      * @throws Exception
      */
     public TestFlowResult runWithBeanAsPayload(String beanId) throws Exception {
-        this.testData = TestData.fromBean(beanId, this.context, this.muleContext);
+        testData.initFromBean(beanId);
         return this.run();
     }
 
     /**
      * Convenience method to run this flow using the specified object as the payload of the
-     * TestRunMessage. If a TestRunMessage was loaded, it is ignored here.
+     * TestRunMessage. If another TestData was loaded, it is ignored here.
      * @param payload
      * @return
      * @throws Exception
      */
     public TestFlowResult runWithPayload(Object payload) throws Exception {
-        this.testData = new TestData().setPayload(payload);
+        this.testData = new TestData(context, muleContext).setPayload(payload);
         return this.run();
     }
 

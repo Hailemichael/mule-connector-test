@@ -13,48 +13,54 @@ import java.util.Map;
  */
 public class TestData {
 
-    private Map<String, Object> flowVars = new HashMap<String, Object>();
+    private Map<String, Object> flowVars;
     private Object payload;
+    private final ApplicationContext context;
+    private final MuleContext muleContext;
 
-    /**
-     * Helper method to migrate test data in the "old" format (payload stored
-     * as the value assigned to "payloadContent" in a map).
-     * @param oldData The map from which to create the test run message.
-     * @return A complete TestData object resulting from the specified map.
-     */
-    static TestData fromMap(Map<String, Object> oldData) {
-        TestData newData = new TestData();
-        if (oldData == null) {
-            return newData;
-        }
-        for (String key : oldData.keySet()) {
-            if (!"payloadContent".equals(key)) {
-                newData.setFlowVar(key, oldData.get(key));
-            }
-        }
-        if (oldData.containsKey("payloadContent")) {
-            newData.setPayload(oldData.get("payloadContent"));
-        }
-        return newData;
+    TestData(ApplicationContext context, MuleContext muleContext) {
+        this.init();
+        this.context = context;
+        this.muleContext = muleContext;
+    }
+
+    private void init() {
+        this.payload = null;
+        this.flowVars = new HashMap<String, Object>();
     }
 
     /**
-     * Helper method to use beans as test data following the old convention, which is as follows:
-     * <p>
-     * If the bean is a map and its name ends with "TestData", its contents are set as flow variables
-     * and the content of the key named "payloadContent" is set as the payload.
-     * If not, the entire map is set as the payload and no flow variables are set.
-     * </p>
-     * @param beanId The name of the bean
-     * @param context The current Mule context
-     * @return
+     * Initializes the test data from a given map. If there is a key named
+     * {@code payloadContent}, it will be set as the payload.
+     * @param oldData The map from which to create the test run message.
      */
-    static TestData fromBean(String beanId, ApplicationContext context, MuleContext muleContext) {
+    public void initFromMap(Map<String, Object> oldData) {
+        this.init();
+        for (String key : oldData.keySet()) {
+            if (!"payloadContent".equals(key)) {
+                this.setFlowVar(key, oldData.get(key));
+            }
+        }
+        if (oldData.containsKey("payloadContent")) {
+            this.setPayload(oldData.get("payloadContent"));
+        }
+    }
+
+    /**
+     * Initializes the test data from a given Spring bean ID. If the bean is
+     * a map and its ID ends with {@code TestData}, then this method will have
+     * the same behaviour as {@link TestData#initFromMap}. If not, it will be
+     * set as the message payload.
+     * @param beanId The Spring bean ID.
+     */
+    public void initFromBean(String beanId) {
         Object bean = context.getBean(beanId);
         if (bean instanceof Map && beanId.endsWith("TestData")) {
-            return TestData.fromMap((Map) bean);
+            this.initFromMap((Map) bean);
         } else {
-            return new TestData().setPayload(bean);
+            this.init();
+            this.flowVars = new HashMap<String, Object>();
+            this.setPayload(bean);
         }
     }
 
@@ -76,8 +82,7 @@ public class TestData {
      * @return If no such flow variable has been defined, returns {@code null}. Keep in
      * mind that {@code null} is a legal value for a flow variable.
      */
-    public Object getFlowVarContent(String flowVarName) {
-        // Don't break backwards compatibility with old-style map
+    public Object getFlowVar(String flowVarName) {
         if (flowVarName.equals("payloadContent")) {
             return this.getPayload();
         } else {

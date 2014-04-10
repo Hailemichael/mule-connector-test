@@ -19,7 +19,7 @@ public class AutomationTestFlowsFileTest extends ConnectorTestCaseTestParent {
 
     @Test
     public void testOverrideXmlConfig() throws Exception {
-        assertEquals(runFlowAndGetPayload("test"), "Override");
+        assertEquals(getFlow("test").run().getPayload(), "Override");
     }
 
     @Override

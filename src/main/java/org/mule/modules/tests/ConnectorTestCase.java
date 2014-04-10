@@ -41,10 +41,11 @@ public class ConnectorTestCase {
 
     private BaseConnectorTestCase baseConnectorTestCase = new BaseConnectorTestCase(getConfigXmlFile());
     private MuleContext muleContext = baseConnectorTestCase.getMuleContext();
-    private TestData testData = new TestData();
 	private static ApplicationContext context;
+    private TestData testData = new TestData(context, muleContext);
 
-	protected static Properties automationCredentials;
+
+    protected static Properties automationCredentials;
 
 	private static void terminateTestRun(String message) {
 		LOGGER.fatal(message);
@@ -115,199 +116,16 @@ public class ConnectorTestCase {
         return "automation-test-flows.xml";
     }
 
-    /**
-     * Use initializeTestRunMessage instead
-     * @param data
-     */
-    @Deprecated
-    protected void loadTestRunMessage(String beanId) {
-		Object bean = context.getBean(beanId);
-		if (bean instanceof Map) {
-			testData.addFlowVars((Map<String, Object>) context.getBean(beanId));
-		} else {
-			testData.setFlowVar(beanId, bean);
-		}
-    }
-
-    /**
-     * Use initializeTestRunMessage instead
-     * @param data
-     */
-    @Deprecated
-	public void loadTestRunMessage(Map<String,Object> data) {
-		this.testData.setFlowVars(data);
-	}
-
     public <T> T getBeanFromContext(String beanId) throws BeansException {
 		return (T) context.getBean(beanId);
 	}
-
-    @Deprecated
-    public void upsertBeanFromContextOnTestRunMessage(String beanId) {
-		Object bean = getBeanFromContext(beanId);
-		if (bean instanceof Map) {
-			this.testData.getFlowVars().putAll((Map<String, Object>) context.getBean(beanId));
-		} else {
-			this.testData.setPayload(bean);
-		}
-    }
-
-    @Deprecated
-    public void upsertBeanFromContextOnTestRunMessage(String key,String beanId) {
-		Object bean = getBeanFromContext(beanId);
-		this.testData.getFlowVars().put(key, bean);
-    }
-
-    @Deprecated
-	public void upsertOnTestRunMessage(String key, Object value) {
-        testData.setFlowVar(key, value);
-	}
-
-    @Deprecated
-	public void upsertOnTestRunMessage(Map<String,Object> data) {
-		testData.setFlowVars(data);
-	}
-
-    @Deprecated
-	public void upsertPayloadContentOnTestRunMessage(Object payloadContent) {
-		this.testData.setPayload(payloadContent);
-	}
-
-    @Deprecated
-	public <T> T getTestRunMessagePayload() {
-		return this.testData.getPayload();
-	}
-
-    @Deprecated
-	public <T> T getTestRunMessageValue(String key) {
-		return (T) testData.getFlowVarContent(key);
-	}
-
-    @Deprecated
-	public void removeFromTestRunMessage(String key) {
-		testData.getFlowVars().remove(key);
-	}
-
-    @Deprecated
-	public boolean keyContainedInTestRunMessage(Object key) {
-		return testData.getFlowVars().containsKey(key);
-	}
-
-    @Deprecated
-	public Set<String> getTestRunMessageKeySet() {
-		return testData.getFlowVars().keySet();
-	}
-
-
-    /**
-     * TestRunMessage is already loaded with values for the operation
-     * @param flowName
-     * @return
-     * @throws Exception
-     */
-    @Deprecated
-    protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
-        return getFlow(flowName).run().getPayload();
-    }
 
     protected TestFlow getFlow(String flowName) throws InitializationError {
         return new TestFlow(muleContext, context, flowName, testData);
     }
 
-
-	/**
-     * TestRunMessage is already loaded with values for the operation
-     * @param flowName
-     * @return
-     * @throws Exception
-     */
-    @Deprecated
-    protected MuleMessage runFlowAndGetMessage(String flowName) throws Exception {
-    	return getFlow(flowName).run().getMessage();
-    }
-
-	/**
-     * @param flowName
-     * @param invocationProperty
-     * @return
-     * @throws Exception
-     */
-    @Deprecated
-    protected <T> T runFlowAndGetInvocationProperty(String flowName, String invocationProperty) throws Exception {
-        return getFlow(flowName).run().getMessage().getInvocationProperty(invocationProperty);
-    }
-
-    /**
-     * Returns the MuleMessage containing the payload of the operation.
-     * TestRunMessage is not the source of data for this method.
-     * Meant for retrieving auxiliary information or when test involves a single call to the operation under test.
-     *
-     * @param flowName
-     * @param beanId is the id of a map Spring bean declared in the AutomationSpringBeans
-     * @return
-     * @throws Exception
-     */
-    @Deprecated
-    protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
-        return getFlow(flowName).runWithBeanAsPayload(beanId).getMessage();
-    }
-
-
-    /**
-     * Returns the Payload of the flowName operation.
-     * TestRunMessage is not the source of data for this method.
-     * Meant for retrieving auxiliary information or when test involves a single call to the operation under test.
-     *
-     * @param flowName
-     * @param beanId is the id of a map Spring bean declared in the AutomationSpringBeans
-     * @return
-     * @throws Exception
-     */
-    @Deprecated
-    protected <T> T runFlowAndGetPayload(String flowName, String beanId) throws Exception {
-        return getFlow(flowName).runWithBeanAsPayload(beanId).getPayload();
-    }
-
-    @Deprecated
-    protected void initializeTestRunMessage(String key, Object object) {
-        this.testData.setFlowVar(key, object);
-    }
-
-    @Deprecated
-    protected void initializeTestRunMessage(Map<String, Object> map) {
-        this.testData = TestData.fromMap(map);
-    }
-
-    @Deprecated
-    protected void initializeTestRunMessage(String beanId) {
-        this.testData = TestData.fromBean(beanId, context, this.muleContext);
-    }
-
-    @Deprecated
-    protected void initializeTestRunMessage() {
-
-    }
-
     public TestData getTestData() {
         return this.testData;
-    }
-
-    // TODO: Provide these methods here or not, through getTestData()?
-
-    public void setPayload(Object payload) {
-        this.testData.setPayload(payload);
-    }
-
-    public void setFlowVar(String flowVar, Object value) {
-        this.testData.setFlowVar(flowVar, value);
-    }
-
-    public void addFlowVars(Map<String, Object> flowVars) {
-        this.testData.addFlowVars(flowVars);
-    }
-
-    public void setFlowVars(Map<String, Object> flowVars) {
-        this.testData.setFlowVars(flowVars);
     }
 
 }
