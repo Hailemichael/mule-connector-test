@@ -68,7 +68,7 @@ public class ConnectorTestUtils {
 		return DatatypeFactory.newInstance().newXMLGregorianCalendar(date);
     }
 
-    public static InputStream generateRandomInputStream() throws Exception {
+    public static InputStream generateRandomInputStream() {
     	return IOUtils.toInputStream(UUID.randomUUID().toString());
     }
 
