@@ -19,6 +19,7 @@ public class TestFlowResult {
         return this.response.getMessage();
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getPayload() {
         return (T) this.getMessage().getPayload();
     }
