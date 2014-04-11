@@ -20,7 +20,7 @@ public class TestData {
      * set as the payload. The other values will be set as flow variables.
      * @param map The map to create the TestData object from.
      */
-    public static TestData fromMap(Map<String, Object> map) {
+    public TestData fromMap(Map<String, Object> map) {
         Object payload = null;
         Map<String, Object> flowVars = new HashMap<String, Object>();
         for (String key : map.keySet()) {
@@ -33,17 +33,6 @@ public class TestData {
         return new TestData(flowVars, payload);
     }
 
-    /**
-     * Creates a new TestData object containing a single flow variable.
-     * @param flowVarName The name of the flow variable.
-     * @param flowVarContent The content of the flow variable.
-     */
-    public static TestData withSingleFlowVar(String flowVarName, Object flowVarContent) {
-        Map<String, Object> flowVariables = new HashMap<String, Object>();
-        flowVariables.put(flowVarName, flowVarContent);
-        return new TestData(flowVariables, null);
-    }
-
     public TestData(Map<String, Object> flowVars, Object payload) {
         if (flowVars == null) {
             this.flowVars = new HashMap<String, Object>();
@@ -51,6 +40,13 @@ public class TestData {
             this.flowVars = flowVars;
         }
         this.payload = payload;
+    }
+
+    /**
+     * Creates a new TestData object with no flow variables and no payload.
+     */
+    public TestData() {
+        this(null, null);
     }
 
     /**

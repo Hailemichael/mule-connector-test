@@ -69,9 +69,9 @@ public class TestFlow {
         TestData testData;
         Object bean = context.getBean(beanId);
         if (bean instanceof Map && beanId.endsWith("TestData")) {
-            testData = TestData.fromMap((Map<String, Object>) bean);
+            testData = new TestData().fromMap((Map<String, Object>) bean);
         } else {
-            testData = new TestData(null, bean);
+            testData = new TestData().withPayload(bean);
         }
         return this.run(testData);
     }
