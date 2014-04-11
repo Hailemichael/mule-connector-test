@@ -11,6 +11,4 @@ package org.mule.modules.tests;
 
 public class ConnectorTestCaseTestParent extends ConnectorTestCase {
 
-	
-	
 }

@@ -1,11 +1,8 @@
 package org.mule.modules.tests;
 
-import org.mule.MessageExchangePattern;
 import org.mule.api.MuleContext;
-import org.mule.api.MuleEvent;
 import org.mule.api.config.ConfigurationBuilder;
 import org.mule.config.spring.SpringXmlConfigurationBuilder;
-import org.mule.tck.MuleTestUtils;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
 /**
