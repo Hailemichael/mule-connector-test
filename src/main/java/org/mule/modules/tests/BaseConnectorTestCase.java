@@ -38,7 +38,13 @@ class BaseConnectorTestCase extends AbstractMuleContextTestCase {
         try {
             context = super.createMuleContext();
             context.start();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // If MuleContext initialization fails, there is nothing
+            // that can be done. By not throwing an exception here,
+            // we don't force ConnectorTestCase subclasses to declare
+            // a default constructor that throws Exception.
+        }
         return context;
+
     }
 }

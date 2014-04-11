@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context"
-      xmlns:concur="http://www.mulesoft.org/schema/mule/concur" xmlns="http://www.mulesoft.org/schema/mule/core"
-      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-      version="EE-3.4.1"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/concur http://www.mulesoft.org/schema/mule/concur/current/mule-concur.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+<mule
+        xmlns="http://www.mulesoft.org/schema/mule/core"
+        xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+        version="EE-3.4.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 
     <flow name="test-without-modifying-payload" doc:name="test-without-modifying-payload">
         <logger message="#[payload]" level="INFO" doc:name="Logger"/>
@@ -17,7 +14,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     <flow name="test-maps-as-beans" doc:name="test-maps-as-beans">
         <set-payload value="#[flowVars.aTestDataMapKey]|#[payload.aRegularMapKey]" doc:name="Set Payload"/>
     </flow>
-    
+
     <flow name="test-pojo-as-bean" doc:name="test-pojo-as-bean">
         <set-payload value="#[payload]" doc:name="Set Payload"/>
     </flow>
@@ -25,5 +22,5 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
     <flow name="test-exception" doc:name="test-exception">
         <set-payload value="#[payload.get('newKey').toString()]" doc:name="Set Payload"/>
     </flow>
-    
+
 </mule>

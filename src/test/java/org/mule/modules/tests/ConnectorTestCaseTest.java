@@ -8,12 +8,6 @@
 
 package org.mule.modules.tests;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +16,12 @@ import org.junit.runners.model.InitializationError;
 import org.mule.api.MuleMessage;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Mulesoft, Inc.
@@ -42,84 +42,46 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
 	public void setUp() throws Exception {
 		aTestDataMap = (HashMap<String, Object>) testContext.getBean("aMapTestData");
     	aRegularMap = (HashMap<String, Object>) testContext.getBean("aRegularMap");
-    	pojoValue = ((Integer) testContext.getBean("aPOJO")).toString();
-    }
-
-    @Test
-    public void testInitializeTestRunMessagePassingKeyValuePair() {
-        getTestData().setFlowVar("key", aTestDataMap.get("aTestDataTestDataMapKey"));
-        assertEquals(aTestDataMap.get("aTestDataTestDataMapKey"), getTestData().getFlowVar("key"));
-    }
-
-    @Test
-    public void testInitializeTestRunMessagePassingMap()  {
-    	getTestData().initFromMap(aTestDataMap);
-    	assertEquals(aTestDataMap.get("aTestDataTestDataMapKey"), getTestData().getFlowVar("aTestDataTestDataMapKey"));
-    }
-
-    @Test
-    public void testInitializeTestRunMessageFromTestDataMapBeanId()  {
-        getTestData().initFromBean("aMapTestData");
-        assertEquals(aTestDataMap.get("aTestDataTestDataMapKey"), getTestData().getFlowVar("aTestDataTestDataMapKey"));
-    }
-
-    @Test
-    public void testGetTestRunMessagePayload() {
-    	getTestData().setPayload(aTestDataMap.get("payloadContent"));
-        assertEquals(aTestDataMap.get("payloadContent"), getTestData().getPayload());
-    }
-
-    @Test
-    public void testInitializeTestRunMessageFromRegularMapBeanId()  {
-        getTestData().initFromBean("aRegularMap");
-        assertEquals(aRegularMap, getTestData().getPayload());
-    }
-
-    @Test
-    public void testInitializeTestRunMessageFromPOJOBeanId()  {
-        getTestData().initFromBean("aPOJO");
-        assertEquals(pojoValue, getTestData().getPayload().toString());
+    	pojoValue = testContext.getBean("aPOJO").toString();
     }
 
     @Test
     public void testRunFlowAndGetMessageFromTestRunMessage() throws Exception {
-        getTestData().initFromMap(aTestDataMap);
-        MuleMessage message = getFlow("test-maps-as-beans").run().getMessage();
+        TestData data = new TestData(aTestDataMap, aRegularMap);
+        MuleMessage message = getFlow("test-maps-as-beans").run(data).getMessage();
         assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), message.getPayload().toString());
     }
 
     @Test
     public void testRunFlowAndGetMessagePassingTestDataMapBeanId() throws Exception {
-        getTestData().initFromBean("aMapTestData");
-    	MuleMessage message = getFlow("test-maps-as-beans").run().getMessage();
-        assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), message.getPayload().toString());
-        assertFalse(getTestData().getFlowVars().keySet().containsAll(aTestDataMap.keySet()));
+    	TestFlowResult result = getFlow("test-maps-as-beans").runWithBean("aMapTestData");
+        assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), result.getMessage().getPayload().toString());
+        assertFalse(result.getTestData().getFlowVars().keySet().containsAll(aTestDataMap.keySet()));
     }
 
     @Test
     public void testRunFlowAndGetMessagePassingPOJOBeanId() throws Exception {
-        getTestData().initFromBean("aPOJO");
-    	MuleMessage message = getFlow("test-pojo-as-bean").run().getMessage();
+    	MuleMessage message = getFlow("test-pojo-as-bean").runWithBean("aPOJO").getMessage();
         assertEquals(pojoValue, message.getPayload().toString());
     }
 
     @Test
     public void testRunFlowAndGetPayloadFromTestRunMessage() throws Exception {
-        getTestData().initFromBean("aMapTestData");
-        String payload = getFlow("test-maps-as-beans").run().getPayload();
+        TestData data = new TestData(aTestDataMap, aRegularMap);
+        String payload = getFlow("test-maps-as-beans").run(data).getPayload();
         assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), payload);
     }
 
     @Test
     public void testRunFlowAndGetPayloadPassingTestDataMapBeanId() throws Exception {
-    	String payload = getFlow("test-maps-as-beans").runWithBeanAsPayload("aMapTestData").getPayload();
-        assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), payload);
-        assertFalse(getTestData().getFlowVars().keySet().containsAll(aTestDataMap.keySet()));
+    	TestFlowResult result = getFlow("test-maps-as-beans").runWithBean("aMapTestData");
+        assertEquals(String.format("%s|%s", aTestDataMap.get("aTestDataMapKey").toString(), aRegularMap.get("aRegularMapKey").toString()), result.getPayload());
+        assertFalse(result.getTestData().getFlowVars().keySet().containsAll(aTestDataMap.keySet()));
     }
 
     @Test
     public void testRunFlowAndGetPayloadPassingPOJOBeanId() throws Exception {
-        Integer payload = getFlow("test-pojo-as-bean").runWithBeanAsPayload("aPOJO").getPayload();
+        Integer payload = getFlow("test-pojo-as-bean").runWithBean("aPOJO").getPayload();
         assertEquals(pojoValue, payload.toString());
     }
 

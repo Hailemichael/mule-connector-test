@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
-                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
-                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
-    
-    
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+
     <bean id="dateFormat" class="java.text.SimpleDateFormat">
 		<constructor-arg value="yyyy-MM-dd HH:mm:ss" />
 	</bean>
-	
+
 	<bean id="randomEmailAddress" class="org.mule.modules.tests.ConnectorTestUtils"
 		factory-method="generateRandomEmailAddress" scope="prototype" />
-	
+
 	<bean id="randomShortString" class="org.mule.modules.tests.ConnectorTestUtils"
 		factory-method="generateRandomShortString" scope="prototype" />
-	
+
 	<bean id="xmlGregorianCalendarDateInThePast" class="org.mule.modules.tests.ConnectorTestUtils"
 		factory-method="generateXMLGregorianCalendarDateForMinutesBeforeCurrent" scope="prototype" >
 		<constructor-arg value="5" />
@@ -25,8 +21,8 @@
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 	    <property name="ignoreUnresolvablePlaceholders" value="true"/>
-	</bean> 
-	
+	</bean>
+
 	<bean id="automationCredentials" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 	   <property name="ignoreResourceNotFound" value="true"/>
 	   <property name="locations">
@@ -36,5 +32,5 @@
 	      </list>
 	   </property>
 	</bean>
-                      
+
 </beans>
