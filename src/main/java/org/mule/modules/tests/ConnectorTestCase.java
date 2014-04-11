@@ -10,14 +10,14 @@ package org.mule.modules.tests;
 
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
-import org.junit.runners.model.InitializationError;
 import org.mule.api.MuleContext;
-import org.mule.api.MuleMessage;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -33,7 +33,6 @@ public class ConnectorTestCase {
     protected static final String DEFAULT_SPRING_CONFIG_FILE = "AutomationSpringBeans.xml";
     protected static List<String> SPRING_CONFIG_FILES = new LinkedList<String>();
 
-
     private final static String EMPTY_CREDENTIALS_FILE = "Credentials file is empty";
     private final static String CREDENTIALS_VALUE_MISSING = "Credentials key is missing its value";
     private final static String SPRINGBEANS_NOT_INITIALIZED = "Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.";
@@ -42,8 +41,6 @@ public class ConnectorTestCase {
     private BaseConnectorTestCase baseConnectorTestCase = new BaseConnectorTestCase(getConfigXmlFile());
     private MuleContext muleContext = baseConnectorTestCase.getMuleContext();
 	private static ApplicationContext context;
-    private TestData testData = new TestData(context, muleContext);
-
 
     protected static Properties automationCredentials;
 
@@ -52,6 +49,10 @@ public class ConnectorTestCase {
 		System.exit(1);
 
 	}
+
+    private MuleContext getMuleContext() {
+        return this.baseConnectorTestCase.getMuleContext();
+    }
 
     @BeforeClass
     public static void beforeClass() throws NoSuchFieldException, IllegalAccessException {
@@ -120,12 +121,8 @@ public class ConnectorTestCase {
 		return (T) context.getBean(beanId);
 	}
 
-    protected TestFlow getFlow(String flowName) throws InitializationError {
-        return new TestFlow(muleContext, context, flowName, testData);
-    }
-
-    public TestData getTestData() {
-        return this.testData;
+    protected TestFlow getFlow(String flowName) throws Exception {
+        return new TestFlow(muleContext, context, flowName);
     }
 
 }

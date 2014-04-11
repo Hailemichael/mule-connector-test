@@ -7,10 +7,12 @@ public class TestFlowResult {
 
     private MuleEvent response;
     private TestFlow testFlow;
+    private TestData testData;
 
     TestFlowResult(TestFlow testFlow, TestData testData, MuleEvent response) {
         this.testFlow = testFlow;
         this.response = response;
+        this.testData = testData;
     }
 
     public MuleMessage getMessage() {
@@ -23,5 +25,9 @@ public class TestFlowResult {
 
     public TestFlow getFlow() {
         return this.testFlow;
+    }
+
+    public TestData getTestData() {
+        return this.testData;
     }
 }

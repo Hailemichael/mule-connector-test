@@ -8,15 +8,15 @@ import org.mule.construct.Flow;
 import org.mule.tck.MuleTestUtils;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Map;
+
 public class TestFlow {
 
     private final Flow flow;
-    private TestData testData;
-    private ApplicationContext context;
-    private MuleContext muleContext;
+    private final ApplicationContext context;
+    private final MuleContext muleContext;
 
-    TestFlow(MuleContext muleContext, ApplicationContext context, String flowName, TestData testData) throws InitializationError {
-        this.testData = testData;
+    TestFlow(MuleContext muleContext, ApplicationContext context, String flowName) throws InitializationError {
         this.context = context;
         this.muleContext = muleContext;
         this.flow = (Flow) muleContext.getRegistry().lookupFlowConstruct(flowName);
@@ -38,40 +38,42 @@ public class TestFlow {
     }
 
     /**
-     * Executes this flow with the currently loaded TestData, which can be accessed and
-     * modified through {@code getTestData()}.
+     * Executes this flow with the specified TestData. TestData can be manually instantiated
+     * or created through static utility methods, such as TestData.fromBean()
      * @return A {@link TestFlowResult} object containing the result of running this flow.
-     * @throws Exception
      */
-    public TestFlowResult run() throws Exception {
+    public TestFlowResult run(TestData testData) throws Exception {
         // TODO: What to do with exception here? Throw as-is or modify?
         MuleEvent response = this.flow.process(getMuleEvent(testData));
-        return new TestFlowResult(this, this.testData, response);
+        return new TestFlowResult(this, testData, response);
     }
 
     /**
-     * Convenience method to run this flow using the specified bean as the TestRunMessage.
-     * <p>If the bean ID ends with "TestData", the value of each key is set as a flow variable.
-     * If there is {@code payloadContent} key, its value will be set as the payload.</p>
-     * @param beanId The bean ID to set as the payload.
+     * Executes this flow without passing any test data to it.
      * @return A {@link TestFlowResult} object containing the result of running this flow.
-     * @throws Exception
      */
-    public TestFlowResult runWithBeanAsPayload(String beanId) throws Exception {
-        testData.initFromBean(beanId);
-        return this.run();
+    public TestFlowResult run() throws Exception {
+        return this.run(new TestData(null, null));
     }
 
     /**
-     * Convenience method to run this flow using the specified object as the payload of the
-     * TestRunMessage. If another TestData was loaded, it is ignored here.
-     * @param payload
-     * @return
-     * @throws Exception
+     * Runs the given flow using a Spring bean as test data. If the bean is a map
+     * and its ID ends with {@code TestData}, the test data will be constructed
+     * following the same convention as {@link TestData#fromMap}. Otherwise, it
+     * will be set as the payload as-is.
+     * @param beanId The ID of the Spring bean
+     * @return A {@link TestFlowResult} object containing the result of running this flow.
      */
-    public TestFlowResult runWithPayload(Object payload) throws Exception {
-        this.testData = new TestData(context, muleContext).setPayload(payload);
-        return this.run();
+    @SuppressWarnings("unchecked")
+    public TestFlowResult runWithBean(String beanId) throws Exception {
+        TestData testData;
+        Object bean = context.getBean(beanId);
+        if (bean instanceof Map && beanId.endsWith("TestData")) {
+            testData = TestData.fromMap((Map<String, Object>) bean);
+        } else {
+            testData = new TestData(null, bean);
+        }
+        return this.run(testData);
     }
 
 }
