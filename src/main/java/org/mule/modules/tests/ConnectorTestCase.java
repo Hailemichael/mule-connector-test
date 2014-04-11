@@ -10,14 +10,15 @@ package org.mule.modules.tests;
 
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
+import org.junit.runners.model.InitializationError;
 import org.mule.api.MuleContext;
+import org.mule.api.MuleMessage;
+import org.mule.api.transport.Connector;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
