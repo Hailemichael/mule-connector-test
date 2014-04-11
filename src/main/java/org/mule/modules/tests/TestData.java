@@ -84,7 +84,7 @@ public class TestData {
      * If a flow variable already exists, it is updated with the new value. If not,
      * it is created.
      * @param flowVars The mapping of flow variable names to their contents to update.
-     * @return The modified test run message.
+     * @return The new and updated test data object.
      */
     public TestData addFlowVars(Map<String, Object> flowVars) {
         Map<String, Object> newFlowVars = new HashMap<String, Object>();
@@ -94,7 +94,7 @@ public class TestData {
     }
 
     /**
-     * @return The payload associated to this TestRunMessage object. It can be
+     * @return The payload associated to this TestData object. It can be
      * accessed in a flow by using a MEL expression, as such: {@code #[payload]}
      */
     @SuppressWarnings("unchecked")
