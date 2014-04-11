@@ -15,10 +15,10 @@ public class TestData {
     private final Object payload;
 
     /**
-     * Creates a new TestData object from a map that follows a convention.
+     * Creates a new {@code TestData} object from a map that follows a convention.
      * If there is a key named {@code payloadContent}, its value will be
      * set as the payload. The other values will be set as flow variables.
-     * @param map The map to create the TestData object from.
+     * @param map The map to create the {@code TestData} object from.
      */
     public TestData fromMap(Map<String, Object> map) {
         Object payload = null;
@@ -43,14 +43,14 @@ public class TestData {
     }
 
     /**
-     * Creates a new TestData object with no flow variables and no payload.
+     * Creates a new {@code TestData} object with no flow variables and no payload.
      */
     public TestData() {
         this(null, null);
     }
 
     /**
-     * Returns a new TestData object with a created or updated flow variable.
+     * Returns a new {@code TestData} object with a created or updated flow variable.
      * @param flowVarName The flow variable to create or modify.
      * @param value The content to assign to this flow variable.
      */
@@ -80,7 +80,7 @@ public class TestData {
     }
 
     /**
-     * Returns a new TestData object with updated flow variables given by a map.
+     * Returns a new {@code TestData} object with updated flow variables given by a map.
      * If a flow variable already exists, it is updated with the new value. If not,
      * it is created.
      * @param flowVars The mapping of flow variable names to their contents to update.
@@ -94,7 +94,7 @@ public class TestData {
     }
 
     /**
-     * @return The payload associated to this TestData object. It can be
+     * @return The payload associated to this {@code TestData} object. It can be
      * accessed in a flow by using a MEL expression, as such: {@code #[payload]}
      */
     @SuppressWarnings("unchecked")
@@ -104,7 +104,7 @@ public class TestData {
 
 
     /**
-     * Returns a new TestData object with the modified payload.
+     * Returns a new {@code TestData} object with the modified payload.
      * @param payload The payload object to set.
      */
     public TestData withPayload(Object payload) {

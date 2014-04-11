@@ -38,8 +38,7 @@ public class TestFlow {
     }
 
     /**
-     * Executes this flow with the specified TestData. TestData can be manually instantiated
-     * or created through static utility methods, such as TestData.fromBean()
+     * Executes this flow with the specified {@link TestData}.
      * @return A {@link TestFlowResult} object containing the result of running this flow.
      */
     public TestFlowResult run(TestData testData) throws Exception {
