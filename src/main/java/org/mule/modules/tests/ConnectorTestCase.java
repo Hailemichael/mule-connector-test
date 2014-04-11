@@ -37,7 +37,6 @@ public class ConnectorTestCase {
     private final static String TESTRUNMESSAGE_NOT_INITIALIZED = "TestRunMessage was not initialized for current test.";
 
     private BaseConnectorTestCase baseConnectorTestCase = new BaseConnectorTestCase(getConfigXmlFile());
-    private MuleContext muleContext = baseConnectorTestCase.getMuleContext();
 	private static ApplicationContext context;
 
     protected static Properties automationCredentials;
@@ -47,10 +46,6 @@ public class ConnectorTestCase {
 		System.exit(1);
 
 	}
-
-    private MuleContext getMuleContext() {
-        return this.baseConnectorTestCase.getMuleContext();
-    }
 
     @BeforeClass
     public static void beforeClass() throws NoSuchFieldException, IllegalAccessException {
@@ -120,7 +115,7 @@ public class ConnectorTestCase {
 	}
 
     protected TestFlow getFlow(String flowName) throws Exception {
-        return new TestFlow(muleContext, context, flowName);
+        return new TestFlow(baseConnectorTestCase.getMuleContext(), context, flowName);
     }
 
 }

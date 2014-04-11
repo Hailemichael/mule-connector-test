@@ -17,13 +17,10 @@ import org.mule.tck.junit4.AbstractMuleContextTestCase;
 class BaseConnectorTestCase extends AbstractMuleContextTestCase {
 
     private final String flowsXml;
+    private MuleContext muleContext = null;
 
     public BaseConnectorTestCase(String flowsXml) {
         this.flowsXml = flowsXml;
-    }
-
-    public static MuleEvent getTestEvent(Object data) throws Exception {
-        return MuleTestUtils.getTestEvent(data, MessageExchangePattern.REQUEST_RESPONSE, muleContext);
     }
 
     @Override
@@ -33,18 +30,13 @@ class BaseConnectorTestCase extends AbstractMuleContextTestCase {
     }
 
     // Work around muleContext being protected
-    public MuleContext getMuleContext() {
-        MuleContext context = null;
-        try {
-            context = super.createMuleContext();
+    public MuleContext getMuleContext() throws Exception {
+        if (this.muleContext != null) {
+            return muleContext;
+        } else {
+            MuleContext context = super.createMuleContext();
             context.start();
-        } catch (Exception e) {
-            // If MuleContext initialization fails, there is nothing
-            // that can be done. By not throwing an exception here,
-            // we don't force ConnectorTestCase subclasses to declare
-            // a default constructor that throws Exception.
+            return context;
         }
-        return context;
-
     }
 }
