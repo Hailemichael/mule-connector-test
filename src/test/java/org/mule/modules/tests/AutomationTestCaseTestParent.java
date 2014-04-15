@@ -9,6 +9,6 @@
 package org.mule.modules.tests;
 
 
-public class ConnectorTestCaseTestParent extends ConnectorTestCase {
+public class AutomationTestCaseTestParent extends AutomationTestCase {
 
 }

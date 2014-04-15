@@ -13,7 +13,7 @@ import org.junit.runners.model.InitializationError;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestFlowTests extends ConnectorTestCaseTestParent {
+public class TestFlowTests extends AutomationTestCaseTestParent {
 
     @Test
     public void runFlowManualTestData() throws Exception {

@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestDataTests extends ConnectorTestCaseTestParent {
+public class TestDataTests extends AutomationTestCaseTestParent {
 
     private Map<String, Object> map = new HashMap<String, Object>();
 
