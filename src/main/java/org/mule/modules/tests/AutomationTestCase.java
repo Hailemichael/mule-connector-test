@@ -10,6 +10,7 @@ package org.mule.modules.tests;
 
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
+import org.mule.api.MuleContext;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -117,6 +118,18 @@ public class AutomationTestCase {
 
     protected TestFlow getFlow(String flowName) throws Exception {
         return new TestFlow(baseConnectorTestCase.getMuleContext(), context, flowName);
+    }
+
+    /**
+     * This method provides access to the Mule context, which allows manual usage
+     * of all Mule functions.
+     * <p>Only use this method as a last resort when this class doesn't provide
+     * the functionality you need.</p>
+     * @return
+     * @throws Exception
+     */
+    protected MuleContext getMuleContext() throws Exception {
+        return this.baseConnectorTestCase.getMuleContext();
     }
 
 }
