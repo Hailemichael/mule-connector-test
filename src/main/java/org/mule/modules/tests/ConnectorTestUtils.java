@@ -22,7 +22,7 @@ import java.util.UUID;
  *
  * @author Mulesoft, Inc
  */
-public class ConnectorTestUtils {
+public abstract class ConnectorTestUtils {
 
     public static Boolean assertNullPayload(Object actual) {
         return actual instanceof NullPayload || actual.equals("{NullPayload}");
