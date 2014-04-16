@@ -22,7 +22,7 @@ public class TestDataTests extends AutomationTestCaseTestParent {
     @Test(expected = UnsupportedOperationException.class)
     public void flowVarsAreImmutable() {
         map.put("foo", "unmodified");
-        TestData data = new TestData().fromMap(map);
+        TestData data = TestData.fromMap(map);
         map.put("foo", "modified");
         assertEquals("unmodified", data.getFlowVar("foo"));
         data.getFlowVars().put("foo", "modified");
@@ -32,7 +32,7 @@ public class TestDataTests extends AutomationTestCaseTestParent {
     public void createDataFromMap() {
         map.put("foo", "bar");
         map.put("payloadContent", 100);
-        TestData data = new TestData().fromMap(map);
+        TestData data = TestData.fromMap(map);
         assertEquals(100, data.getPayload());
         assertEquals("bar", data.getFlowVar("foo"));
         assertEquals(1, data.getFlowVars().size());
