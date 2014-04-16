@@ -46,6 +46,7 @@ import org.xml.sax.SAXException;
  * @author Mulesoft, Inc
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class ConnectorTestCase extends FunctionalTestCase {
 
     private static final String AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND = "automationCredentials bean not found. Check that ConnectorTestCaseSpringBeans.xml was imported.";
