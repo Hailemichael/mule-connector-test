@@ -20,9 +20,9 @@ import java.util.Map;
 
 public class TestFlow {
 
-    private final Flow flow;
-    private final ApplicationContext context;
-    private final MuleContext muleContext;
+    protected final Flow flow;
+    protected final ApplicationContext context;
+    protected final MuleContext muleContext;
 
     TestFlow(MuleContext muleContext, ApplicationContext context, String flowName) throws InitializationError {
         this.context = context;
@@ -33,11 +33,11 @@ public class TestFlow {
         }
     }
 
-    private MuleEvent getTestEvent(Object payload) throws Exception {
+    protected MuleEvent getTestEvent(Object payload) throws Exception {
         return MuleTestUtils.getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE, this.muleContext);
     }
 
-    private MuleEvent getMuleEvent(TestData testData) throws Exception {
+    protected MuleEvent getMuleEvent(TestData testData) throws Exception {
         MuleEvent event = this.getTestEvent(testData.getPayload());
         for (String key : testData.getFlowVars().keySet()) {
             event.setFlowVariable(key, testData.getFlowVars().get(key));

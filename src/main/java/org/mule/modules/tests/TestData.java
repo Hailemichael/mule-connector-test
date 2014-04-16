@@ -19,8 +19,8 @@ import java.util.Map;
  */
 public class TestData {
 
-    private final Map<String, Object> flowVars;
-    private final Object payload;
+    protected final Map<String, Object> flowVars;
+    protected final Object payload;
 
     /**
      * Creates a new {@code TestData} object from a map that follows a convention.
@@ -28,7 +28,7 @@ public class TestData {
      * set as the payload. The other values will be set as flow variables.
      * @param map The map to create the {@code TestData} object from.
      */
-    public TestData fromMap(Map<String, Object> map) {
+    public static TestData fromMap(Map<String, Object> map) {
         Object payload = null;
         Map<String, Object> flowVars = new HashMap<String, Object>();
         for (String key : map.keySet()) {

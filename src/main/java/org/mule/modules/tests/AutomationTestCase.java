@@ -125,7 +125,6 @@ public class AutomationTestCase {
      * of all Mule functions.
      * <p>Only use this method as a last resort when this class doesn't provide
      * the functionality you need.</p>
-     * @return
      * @throws Exception
      */
     protected MuleContext getMuleContext() throws Exception {
