@@ -39,6 +39,7 @@ class BaseConnectorTestCase extends AbstractMuleContextTestCase {
         if (this.muleContext != null) {
             return muleContext;
         } else {
+            setUpMuleContext();
             MuleContext context = super.createMuleContext();
             context.start();
             return context;
