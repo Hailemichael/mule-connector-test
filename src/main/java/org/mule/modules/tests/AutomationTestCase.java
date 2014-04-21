@@ -52,7 +52,6 @@ public class AutomationTestCase {
     @BeforeClass
     public static void beforeClass() throws NoSuchFieldException, IllegalAccessException {
         initializeSpringApplicationContext();
-        loadAndVerifyAutomationCredentials();
     }
 
     private static void initializeSpringApplicationContext() {
@@ -61,23 +60,6 @@ public class AutomationTestCase {
             context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
         } catch (BeansException e) {
             terminateTestRun(SPRINGBEANS_NOT_INITIALIZED);
-        }
-    }
-
-    private static void loadAndVerifyAutomationCredentials() {
-        try {
-            automationCredentials = (Properties) context.getBean("automationCredentials");
-        } catch (BeansException e) {
-            terminateTestRun(e.getMessage());
-        }
-        if (!automationCredentials.isEmpty()) {
-            for (String name : automationCredentials.stringPropertyNames()) {
-                if (automationCredentials.getProperty(name).isEmpty()) {
-                    terminateTestRun(CREDENTIALS_VALUE_MISSING);
-                }
-            }
-        } else {
-            terminateTestRun(EMPTY_CREDENTIALS_FILE);
         }
     }
 
