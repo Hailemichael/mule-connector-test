@@ -28,18 +28,28 @@ import java.util.Properties;
 @SuppressWarnings("unchecked")
 public class AutomationTestCase {
 
-    private static final Logger LOGGER = Logger.getLogger(AutomationTestCase.class);
-
-    private BaseConnectorTestCase baseConnectorTestCase = new BaseConnectorTestCase(getConfigXmlFile());
     private static ApplicationContext context;
+    private BaseConnectorTestCase baseConnectorTestCase = new BaseConnectorTestCase(getConfigXmlFile());
 
     @BeforeClass
     public static void beforeClass() throws NoSuchFieldException, IllegalAccessException {
-        context = new ClassPathXmlApplicationContext(getConfigXmlFile());
+        context = new ClassPathXmlApplicationContext(getConfigXmlFile(), getBeansXmlFile());
     }
 
+    /**
+     * Override this method if you want to specify a flow file to use for this class.
+     * By default, it is {@code automation-test-flows.xml}.
+     */
     protected static String getConfigXmlFile() {
         return "automation-test-flows.xml";
+    }
+
+    /**
+     * Override this method if you want to specify a bean file to use for this class.
+     * By default, it is {@code AutomationSpringBeans.xml}.
+     */
+    protected static String getBeansXmlFile() {
+        return "AutomationSpringBeans.xml";
     }
 
     public <T> T getBeanFromContext(String beanId) throws BeansException {
