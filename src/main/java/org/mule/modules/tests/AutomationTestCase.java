@@ -43,24 +43,9 @@ public class AutomationTestCase {
 
     protected static Properties automationCredentials;
 
-    private static void terminateTestRun(String message) {
-        LOGGER.fatal(message);
-        System.exit(1);
-
-    }
-
     @BeforeClass
     public static void beforeClass() throws NoSuchFieldException, IllegalAccessException {
-        initializeSpringApplicationContext();
-    }
-
-    private static void initializeSpringApplicationContext() {
-        SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
-        try {
-            context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
-        } catch (BeansException e) {
-            terminateTestRun(SPRINGBEANS_NOT_INITIALIZED);
-        }
+        context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
     }
 
     protected static String[] getConfigSpringFiles() {
