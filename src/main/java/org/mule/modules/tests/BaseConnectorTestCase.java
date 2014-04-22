@@ -15,7 +15,7 @@ import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
 /**
  * This class allows us to use composition instead of inheritance in
- * {@link ConnectorTestCase}, which lets us have control of the interface
+ * {@link org.mule.modules.tests.AutomationTestCase}, which lets us have control of the interface
  * we wish to expose. As a trade-off, it requires this code to leverage
  * functionality that FunctionalTestCase already has.
  */

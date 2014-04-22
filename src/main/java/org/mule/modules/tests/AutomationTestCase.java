@@ -8,16 +8,11 @@
 
 package org.mule.modules.tests;
 
-import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.mule.api.MuleContext;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
 
 
 /**
@@ -25,7 +20,6 @@ import java.util.Properties;
  *
  * @author Mulesoft, Inc
  */
-@SuppressWarnings("unchecked")
 public class AutomationTestCase {
 
     private static ApplicationContext context;
