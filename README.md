@@ -1,22 +1,75 @@
-Mule Connector Test Framework
-=============================
+Getting started
+===============
+The `AutomationTestCase` class provides a simplified way to interact with Mule by calling flows and processing the results.
+The examples and tests use JUnit, but it can be used with any testing framework.
 
-Framework for making Mule connectors testing easier.
+This is a simple case of running a flow using a Spring bean as input data and making an assertion on the result.
+```java
+@Test public void simpleTest() {
+    TestFlow myFlow = getFlow("my-flow");
+    TestFlowResult result = myFlow.runWithBean("myBean");
+    assertEquals(2, result.getPayload());
+}
+```
 
-Get Started
------------
-The [ConnectorTestCase](https://github.com/mulesoft/mule-connector-test/blob/master/src/main/java/org/mule/modules/tests/ConnectorTestCase.java)
-class simplifies how to call Mule flows and process the corresponding results, you only need to extend it in your connector
-TestParent class (e.g. [SalesforceTestParent](https://github.com/mulesoft/salesforce-connector/blob/master/src/test/java/org/mule/modules/salesforce/automation/testcases/SalesforceTestParent.java?source=cc)).
+Flows are defined in `automation-test-flows.xml` by default.
+Override `getConfigXmlFile()` to change this.
 
-It includes the following elements:
+Spring beans are defined in `AutomationSpringBeans.xml` by default.
+Override `getBeansXmlFile()` to change this.
 
-- getConfigXmlFile(): points to the Mule XML config file (default "automation-test-flows.xml").
-- DEFAULT_SPRING_CONFIG_FILE: Default Spring XML file for the testing beans ("AutomationSpringBeans.xml").
-- The testData attribute is the TestRunMessage data structure. TestRunMessage can be updated to add runtime generated data thus working as backbone between @Before, @Test and @After methods. Tests interact with the TestRunMessage trough a set of methods.
-- runFlowAndGetPayload: provides a simple way for running a flow and getting payload prior to loading its input data in the TestRunMessage:
-<pre><code>String payload = runFlowAndGetPayload("test-get-payload");</code></pre>
-<pre><code>MyObject payload = runFlowAndGetPayload("test-get-payload");</code></pre>
-- runFlowAndGetMessage serves the same purpose as runFlowAndGetPayload but will return a Mule Message 
+The `TestData` class can be used to create test messages at runtime.
+It consists of flow variables and a payload, which can be accessed with MEL (Mule Expression Language) expressions.
 
-For futher samples please take a look at the included [tests](https://github.com/mulesoft/mule-connector-test/tree/master/src/test/java/org/mule/modules/tests).
+```java
+@Test public void anotherTest() {
+    TestData data = new TestData().withFlowVar("test", 10);
+    assertEquals(10, getFlow("test-flow").run(data).getPayload());
+}
+```
+
+```xml
+<flow name="test-flow">
+    <set-payload value="#[flowVars.test]" />
+</flow>
+```
+
+Inbound endpoints
+=================
+
+To test an inbound endpoint, you must add an outbound VM endpoint after it.
+An outbound VM endpoint is an in-memory message queue.
+
+For example, if you are testing an SQS queue, your flow will look something like this after adding the VM endpoint:
+
+```xml
+<flow name="receive-message">
+    <sqs:receive-messages config-ref="Sqs" />
+    <!-- process received messages here -->
+    <vm:outbound-endpoint address="vm://sqs" />
+</flow>
+```
+
+In your test, call `runAndWaitOnVM()` on a flow to run it and return the result received by the VM queue.
+
+```xml
+<flow name="send-message" doc:name="SendMessage">
+    <sqs:send-message config-ref="Sqs" message="Hi" />
+</flow>
+```
+
+```java
+@Test public void receiveMessage() {
+    TestFlowResult result = getFlow("send-message").runAndWaitOnVM("sqs", 30 * 1000);
+    assertEquals("Hi", result.getPayload());
+}
+```
+
+Further reading
+===============
+
+For more information, read the Javadocs or see the included tests.
+If you need to do something with Mule that this framework doesn't support, you have two options:
+
+1. Send a pull request
+2. Use `getMuleContext()` and interact with Mule manually
