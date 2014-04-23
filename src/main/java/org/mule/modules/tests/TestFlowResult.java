@@ -8,23 +8,22 @@
 
 package org.mule.modules.tests;
 
-import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 
 public class TestFlowResult {
 
-    private MuleEvent response;
+    private MuleMessage message;
     private TestFlow testFlow;
     private TestData testData;
 
-    TestFlowResult(TestFlow testFlow, TestData testData, MuleEvent response) {
+    TestFlowResult(TestFlow testFlow, TestData testData, MuleMessage message) {
         this.testFlow = testFlow;
-        this.response = response;
+        this.message = message;
         this.testData = testData;
     }
 
     public MuleMessage getMessage() {
-        return this.response.getMessage();
+        return this.message;
     }
 
     @SuppressWarnings("unchecked")

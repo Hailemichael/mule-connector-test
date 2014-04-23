@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule
-        xmlns="http://www.mulesoft.org/schema/mule/core"
+        xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:vm="http://www.mulesoft.org/schema/mule/core"
         version="EE-3.4.1"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
@@ -16,6 +16,16 @@
 
     <flow name="echo-foo">
         <set-payload value="foo" />
+    </flow>
+
+    <flow name="inbound-receive">
+        <vm:inbound-endpoint address="vm://receive" />
+        <set-payload value="#[payload * 2]" />
+        <vm:outbound-endpoint address="vm://collect" /> <!-- This outbound VM endpoint has to be added manually -->
+    </flow>
+
+    <flow name="inbound-send">
+        <vm:outbound-endpoint address="vm://receive" />
     </flow>
 
 </mule>
