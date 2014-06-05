@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestFlowTests extends AutomationTestCaseTestParent {
 
@@ -50,6 +51,12 @@ public class TestFlowTests extends AutomationTestCaseTestParent {
     @Test(expected = InitializationError.class)
     public void nonExistentFlow() throws Exception {
         getFlow("fooFlow");
+    }
+
+    @Test
+    public void nullPayload() throws Exception {
+        TestFlowResult result = getFlow("null-payload").run();
+        assertTrue(result.isNullPayload());
     }
 
 }

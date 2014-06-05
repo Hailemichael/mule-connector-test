@@ -22,6 +22,7 @@ import java.util.UUID;
  *
  * @author Mulesoft, Inc
  */
+@Deprecated
 public abstract class ConnectorTestUtils {
 
     public static Boolean assertNullPayload(Object actual) {

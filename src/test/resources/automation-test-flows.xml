@@ -28,4 +28,8 @@
         <vm:outbound-endpoint address="vm://receive" />
     </flow>
 
+    <flow name="null-payload">
+        <set-variable variableName="dummy" value="dummy"/>
+    </flow>
+
 </mule>

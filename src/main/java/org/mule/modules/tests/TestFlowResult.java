@@ -9,6 +9,7 @@
 package org.mule.modules.tests;
 
 import org.mule.api.MuleMessage;
+import org.mule.transport.NullPayload;
 
 public class TestFlowResult {
 
@@ -37,5 +38,9 @@ public class TestFlowResult {
 
     public TestData getTestData() {
         return this.testData;
+    }
+
+    public boolean isNullPayload() {
+        return this.getPayload() instanceof NullPayload || this.getPayload().equals("{NullPayload}");
     }
 }
