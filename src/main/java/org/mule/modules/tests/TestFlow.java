@@ -106,7 +106,7 @@ public class TestFlow {
      * @return The data received at the specified VM queue.
      * @throws Exception
      */
-    protected TestFlowResult runAndWaitOnVM(final TestData data, final String vmQueueName, long timeoutMs) throws Exception {
+    public TestFlowResult runAndWaitOnVM(final TestData data, final String vmQueueName, long timeoutMs) throws Exception {
         final String vmEndpointUrl = "vm://" + vmQueueName;
         final MuleClient client = muleContext.getClient();
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -126,7 +126,7 @@ public class TestFlow {
         return futureResponse.get(timeoutMs, TimeUnit.MILLISECONDS);
     }
 
-    protected TestFlowResult runAndWaitOnVM(final String vmQueueName, long timeoutMs) throws Exception {
+    public TestFlowResult runAndWaitOnVM(final String vmQueueName, long timeoutMs) throws Exception {
         return this.runAndWaitOnVM(new TestData(), vmQueueName, timeoutMs);
     }
 }
