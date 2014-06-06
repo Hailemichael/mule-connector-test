@@ -41,6 +41,6 @@ public class TestFlowResult {
     }
 
     public boolean isNullPayload() {
-        return this.getPayload() instanceof NullPayload || this.getPayload().equals("{NullPayload}");
+        return this.getPayload() instanceof NullPayload || "{NullPayload}".equals(this.getPayload());
     }
 }

@@ -31,14 +31,21 @@ public class TestData {
     public static TestData fromMap(Map<String, Object> map) {
         Object payload = null;
         Map<String, Object> flowVars = new HashMap<String, Object>();
-        for (String key : map.keySet()) {
-            if (key.equals("payloadContent")) {
-                payload = map.get(key);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if ("payloadContent".equals(entry.getKey())) {
+                payload = entry.getValue();
             } else {
-                flowVars.put(key, map.get(key));
+                flowVars.put(entry.getKey(), entry.getValue());
             }
         }
         return new TestData(flowVars, payload);
+    }
+
+    /**
+     * Creates a new {@code TestData} object with no flow variables and no payload.
+     */
+    public TestData() {
+        this(null, null);
     }
 
     public TestData(Map<String, Object> flowVars, Object payload) {
@@ -48,13 +55,6 @@ public class TestData {
             this.flowVars = flowVars;
         }
         this.payload = payload;
-    }
-
-    /**
-     * Creates a new {@code TestData} object with no flow variables and no payload.
-     */
-    public TestData() {
-        this(null, null);
     }
 
     /**

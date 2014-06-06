@@ -46,8 +46,9 @@ public class TestFlow {
         try {
             return MuleTestUtils.getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE, this.muleContext);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
         }
+        return null;
     }
 
     protected MuleEvent getMuleEvent(TestData testData) {
@@ -63,12 +64,12 @@ public class TestFlow {
      * @return A {@link TestFlowResult} object containing the result of running this flow.
      */
     public TestFlowResult run(TestData testData) {
-        // TODO: What to do with exception here? Throw as-is or modify?
         MuleEvent event;
         try {
             event = this.flow.process(getMuleEvent(testData));
         } catch (MuleException e) {
-            throw new RuntimeException(e);
+            Throwables.propagate(e);
+            return null;
         }
         return new TestFlowResult(this, testData, event.getMessage());
     }
