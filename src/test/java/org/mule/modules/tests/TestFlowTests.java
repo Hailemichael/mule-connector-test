@@ -48,7 +48,7 @@ public class TestFlowTests extends AutomationTestCaseTestParent {
         assertEquals("foo", result.getPayload());
     }
 
-    @Test(expected = InitializationError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void nonExistentFlow() throws Exception {
         getFlow("fooFlow");
     }

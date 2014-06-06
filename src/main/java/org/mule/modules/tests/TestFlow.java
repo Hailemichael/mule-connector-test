@@ -8,10 +8,10 @@
 
 package org.mule.modules.tests;
 
-import org.junit.runners.model.InitializationError;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleEvent;
+import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.api.client.MuleClient;
 import org.mule.construct.Flow;
@@ -27,20 +27,24 @@ public class TestFlow {
     protected final ApplicationContext context;
     protected final MuleContext muleContext;
 
-    TestFlow(MuleContext muleContext, ApplicationContext context, String flowName) throws InitializationError {
+    TestFlow(MuleContext muleContext, ApplicationContext context, String flowName) {
         this.context = context;
         this.muleContext = muleContext;
         this.flow = (Flow) muleContext.getRegistry().lookupFlowConstruct(flowName);
         if (this.flow == null) {
-            throw new InitializationError("Flow named " + flowName + " does not exist");
+            throw new IllegalArgumentException("Flow named " + flowName + " does not exist");
         }
     }
 
-    protected MuleEvent getTestEvent(Object payload) throws Exception {
-        return MuleTestUtils.getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE, this.muleContext);
+    protected MuleEvent getTestEvent(Object payload) {
+        try {
+            return MuleTestUtils.getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE, this.muleContext);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    protected MuleEvent getMuleEvent(TestData testData) throws Exception {
+    protected MuleEvent getMuleEvent(TestData testData) {
         MuleEvent event = this.getTestEvent(testData.getPayload());
         for (String key : testData.getFlowVars().keySet()) {
             event.setFlowVariable(key, testData.getFlowVars().get(key));
@@ -52,9 +56,14 @@ public class TestFlow {
      * Executes this flow with the specified {@link TestData}.
      * @return A {@link TestFlowResult} object containing the result of running this flow.
      */
-    public TestFlowResult run(TestData testData) throws Exception {
+    public TestFlowResult run(TestData testData) {
         // TODO: What to do with exception here? Throw as-is or modify?
-        MuleEvent event = this.flow.process(getMuleEvent(testData));
+        MuleEvent event;
+        try {
+            event = this.flow.process(getMuleEvent(testData));
+        } catch (MuleException e) {
+            throw new RuntimeException(e);
+        }
         return new TestFlowResult(this, testData, event.getMessage());
     }
 
@@ -62,7 +71,7 @@ public class TestFlow {
      * Executes this flow without passing any test data to it.
      * @return A {@link TestFlowResult} object containing the result of running this flow.
      */
-    public TestFlowResult run() throws Exception {
+    public TestFlowResult run() {
         return this.run(new TestData(null, null));
     }
 
@@ -73,9 +82,10 @@ public class TestFlow {
      * will be set as the payload as-is.
      * @param beanId The ID of the Spring bean
      * @return A {@link TestFlowResult} object containing the result of running this flow.
+     * @throws org.springframework.beans.BeansException if the bean could not be found
      */
     @SuppressWarnings("unchecked")
-    public TestFlowResult runWithBean(String beanId) throws Exception {
+    public TestFlowResult runWithBean(String beanId) {
         TestData testData;
         Object bean = context.getBean(beanId);
         if (bean instanceof Map && beanId.endsWith("TestData")) {
@@ -104,15 +114,14 @@ public class TestFlow {
      * @param timeoutMs   Time in milliseconds to wait for a message before throwing a
      *                    {@link TimeoutException}.
      * @return The data received at the specified VM queue.
-     * @throws Exception
      */
-    public TestFlowResult runAndWaitOnVM(final TestData data, final String vmQueueName, long timeoutMs) throws Exception {
+    public TestFlowResult runAndWaitOnVM(final TestData data, final String vmQueueName, long timeoutMs) throws InterruptedException, ExecutionException, TimeoutException {
         final String vmEndpointUrl = "vm://" + vmQueueName;
         final MuleClient client = muleContext.getClient();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<TestFlowResult> waitForResponse = new Callable<TestFlowResult>() {
             @Override
-            public TestFlowResult call() throws Exception {
+            public TestFlowResult call() throws MuleException {
                 // -1 to wait indefinitely appears to be broken
                 MuleMessage message = client.request(vmEndpointUrl, Long.MAX_VALUE);
                 return new TestFlowResult(TestFlow.this, data, message);
@@ -126,7 +135,7 @@ public class TestFlow {
         return futureResponse.get(timeoutMs, TimeUnit.MILLISECONDS);
     }
 
-    public TestFlowResult runAndWaitOnVM(final String vmQueueName, long timeoutMs) throws Exception {
+    public TestFlowResult runAndWaitOnVM(final String vmQueueName, long timeoutMs) throws InterruptedException, ExecutionException, TimeoutException {
         return this.runAndWaitOnVM(new TestData(), vmQueueName, timeoutMs);
     }
 }

@@ -10,7 +10,6 @@ package org.mule.modules.tests;
 
 import org.junit.BeforeClass;
 import org.mule.api.MuleContext;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -46,11 +45,18 @@ public class AutomationTestCase {
         return "AutomationSpringBeans.xml";
     }
 
-    public <T> T getBeanFromContext(String beanId) throws BeansException {
+    @SuppressWarnings("unchecked")
+    public <T> T getBeanFromContext(String beanId) {
         return (T) context.getBean(beanId);
     }
 
-    protected TestFlow getFlow(String flowName) throws Exception {
+    /**
+     * Returns a TestFlow object that can be run with custom test data.
+     * @param flowName The value of the {@code name} tag of the {@code flow} element.
+     * @return A TestFlow object representing the requested Mule flow.
+     * @throws java.lang.IllegalArgumentException if the flow could not be found
+     */
+    protected TestFlow getFlow(String flowName) {
         return new TestFlow(baseConnectorTestCase.getMuleContext(), context, flowName);
     }
 
@@ -59,9 +65,8 @@ public class AutomationTestCase {
      * of all Mule functions.
      * <p>Only use this method as a last resort when this class doesn't provide
      * the functionality you need.</p>
-     * @throws Exception
      */
-    protected MuleContext getMuleContext() throws Exception {
+    protected MuleContext getMuleContext() {
         return this.baseConnectorTestCase.getMuleContext();
     }
 

@@ -26,20 +26,21 @@ import java.util.GregorianCalendar;
  */
 public class AutomationTestUtils {
 
-    protected static DatatypeFactory datatypeFactory;
+    private static final DatatypeFactory datatypeFactory;
+
+    static {
+        try {
+            datatypeFactory = DatatypeFactory.newInstance();
+        } catch (DatatypeConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private AutomationTestUtils() {
         // Prevent instantiation since all methods are static
     }
 
-    // Utility method to avoid throwing Exception everywhere
-    protected static DatatypeFactory getDataTypeFactory() {
-        if (datatypeFactory == null) {
-            try {
-                datatypeFactory = DatatypeFactory.newInstance();
-            } catch (DatatypeConfigurationException e) {
-            }
-        }
+    private static DatatypeFactory getDataTypeFactory() {
         return datatypeFactory;
     }
 

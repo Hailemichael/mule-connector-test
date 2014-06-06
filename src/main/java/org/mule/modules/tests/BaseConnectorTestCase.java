@@ -22,7 +22,7 @@ import org.mule.tck.junit4.AbstractMuleContextTestCase;
 class BaseConnectorTestCase extends AbstractMuleContextTestCase {
 
     private final String flowsXml;
-    private MuleContext muleContext = null;
+    private MuleContext muleContext;
 
     public BaseConnectorTestCase(String flowsXml) {
         this.flowsXml = flowsXml;
@@ -35,14 +35,18 @@ class BaseConnectorTestCase extends AbstractMuleContextTestCase {
     }
 
     // Work around muleContext being protected
-    public MuleContext getMuleContext() throws Exception {
+    public MuleContext getMuleContext() {
         if (this.muleContext != null) {
             return muleContext;
         } else {
-            setUpMuleContext();
-            MuleContext context = super.createMuleContext();
-            context.start();
-            return context;
+            try {
+                setUpMuleContext();
+                muleContext = super.createMuleContext();
+                muleContext.start();
+            } catch (Exception e) {
+                throw new RuntimeException("Error setting up Mule context", e);
+            }
+            return muleContext;
         }
     }
 }
