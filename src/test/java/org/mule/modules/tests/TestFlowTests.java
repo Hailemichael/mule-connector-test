@@ -17,33 +17,33 @@ import static org.junit.Assert.assertTrue;
 public class TestFlowTests extends AutomationTestCaseTestParent {
 
     @Test
-    public void runFlowManualTestData() throws Exception {
+    public void runFlowManualTestData() {
         TestData data = new TestData().withFlowVar("foo", "bar").withPayload(1000);
         TestFlowResult result = getFlow("cat-foo-and-payload").run(data);
         assertEquals("bar1000", result.getPayload());
     }
 
     @Test
-    public void runFlowWithTestDataBean() throws Exception {
+    public void runFlowWithTestDataBean() {
         TestFlowResult result = getFlow("cat-foo-and-payload").runWithBean("fooBar1000TestData");
         assertEquals("bar1000", result.getPayload());
     }
 
     @Test
-    public void runFlowWithRegularMapBean() throws Exception {
+    public void runFlowWithRegularMapBean() {
         TestFlowResult result = getFlow("echo-payload").runWithBean("fooBar1000");
         assertEquals(getBeanFromContext("fooBar1000"), result.getPayload());
     }
 
     @Test
-    public void runFlowWithBean() throws Exception {
+    public void runFlowWithBean() {
         Integer expected = getBeanFromContext("integerPOJO");
         TestFlowResult result = getFlow("echo-payload").runWithBean("integerPOJO");
         assertEquals(expected, result.getPayload());
     }
 
     @Test
-    public void runFlowWithoutData() throws Exception {
+    public void runFlowWithoutData() {
         TestFlowResult result = getFlow("echo-foo").run();
         assertEquals("foo", result.getPayload());
     }
@@ -54,7 +54,7 @@ public class TestFlowTests extends AutomationTestCaseTestParent {
     }
 
     @Test
-    public void nullPayload() throws Exception {
+    public void nullPayload() {
         TestFlowResult result = getFlow("null-payload").run();
         assertTrue(result.isNullPayload());
     }

@@ -10,6 +10,7 @@ package org.mule.modules.tests;
 
 import org.mule.api.MuleContext;
 import org.mule.api.config.ConfigurationBuilder;
+import org.mule.api.config.ConfigurationException;
 import org.mule.config.spring.SpringXmlConfigurationBuilder;
 import org.mule.tck.junit4.AbstractMuleContextTestCase;
 
@@ -29,8 +30,7 @@ class BaseConnectorTestCase extends AbstractMuleContextTestCase {
     }
 
     @Override
-    protected ConfigurationBuilder getBuilder() throws Exception
-    {
+    protected ConfigurationBuilder getBuilder() throws ConfigurationException {
         return new SpringXmlConfigurationBuilder(flowsXml);
     }
 

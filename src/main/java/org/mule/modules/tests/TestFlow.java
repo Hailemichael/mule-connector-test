@@ -8,6 +8,9 @@
 
 package org.mule.modules.tests;
 
+import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.google.common.util.concurrent.UncheckedTimeoutException;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleEvent;
@@ -16,6 +19,8 @@ import org.mule.api.MuleMessage;
 import org.mule.api.client.MuleClient;
 import org.mule.construct.Flow;
 import org.mule.tck.MuleTestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
@@ -26,6 +31,7 @@ public class TestFlow {
     protected final Flow flow;
     protected final ApplicationContext context;
     protected final MuleContext muleContext;
+    private static final Logger logger = LoggerFactory.getLogger(TestFlow.class);
 
     TestFlow(MuleContext muleContext, ApplicationContext context, String flowName) {
         this.context = context;
@@ -106,6 +112,12 @@ public class TestFlow {
      * A {@code vm:outbound-endpoint} must <b>manually</b> be appended to the flow
      * under test before calling this method.
      * </p>
+     * <p>
+     * This method does not throw checked exceptions to avoid cluttering test code,
+     * since usually tests should fail as soon as possible with no error handling.
+     * Thrown exceptions are still documented to allow error handling if
+     * necessary.
+     * </p>
      *
      * @param data The test data to run this flow with.
      * @param vmQueueName The name of the queue to listen for messages on after running
@@ -114,8 +126,11 @@ public class TestFlow {
      * @param timeoutMs   Time in milliseconds to wait for a message before throwing a
      *                    {@link TimeoutException}.
      * @return The data received at the specified VM queue.
+     * @throws UncheckedTimeoutException if the request timed out
+     * @throws UncheckedExecutionException if an error occurred while retrieving a message
+     * @throws RuntimeException is the waiting thread was interrupted
      */
-    public TestFlowResult runAndWaitOnVM(final TestData data, final String vmQueueName, long timeoutMs) throws InterruptedException, ExecutionException, TimeoutException {
+    public TestFlowResult runAndWaitOnVM(final TestData data, final String vmQueueName, long timeoutMs) {
         final String vmEndpointUrl = "vm://" + vmQueueName;
         final MuleClient client = muleContext.getClient();
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -132,10 +147,30 @@ public class TestFlow {
         executor.submit(futureResponse);
         // Send the message
         this.run(data);
-        return futureResponse.get(timeoutMs, TimeUnit.MILLISECONDS);
+        TestFlowResult result = null;
+        try {
+            result = futureResponse.get(timeoutMs, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            logger.info("Timed out while waiting for VM endpoint", e);
+            throw new UncheckedTimeoutException(e);
+        } catch (ExecutionException e) {
+            logger.error("Error while processing VM endpoint message", e);
+            throw new UncheckedExecutionException(e);
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting for message on VM endpoint", e);
+            Throwables.propagate(e);
+        }
+        return result;
     }
 
-    public TestFlowResult runAndWaitOnVM(final String vmQueueName, long timeoutMs) throws InterruptedException, ExecutionException, TimeoutException {
+    /**
+     * Runs this flow and waits until a response is
+     * received on the VM queue named {@code vmQueueName} or a timeout is
+     * reached. This method is used to test inbound endpoints.
+     *
+     * @see #runAndWaitOnVM(TestData, String, long) to use test data
+     */
+    public TestFlowResult runAndWaitOnVM(final String vmQueueName, long timeoutMs) {
         return this.runAndWaitOnVM(new TestData(), vmQueueName, timeoutMs);
     }
 }

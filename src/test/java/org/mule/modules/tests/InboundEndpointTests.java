@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 public class InboundEndpointTests extends AutomationTestCaseTestParent {
 
     @Test
-    public void testInboundEndpoint() throws Exception {
+    public void testInboundEndpoint() {
         TestData data = new TestData().withPayload(42);
         TestFlowResult result = getFlow("inbound-send").runAndWaitOnVM(data, "collect", 20000);
         assertEquals(84, result.getPayload());
