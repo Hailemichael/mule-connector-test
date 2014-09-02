@@ -16,6 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,6 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.runners.model.InitializationError;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
+import org.mule.api.client.MuleClient;
 import org.mule.construct.Flow;
 import org.mule.tck.junit4.FunctionalTestCase;
 import org.springframework.beans.BeansException;
@@ -476,5 +483,48 @@ public class ConnectorTestCase extends FunctionalTestCase {
     protected void runFlowIgnoringPayload(String flowName) throws Exception {
 		runFlowAndGetPayload(flowName);
 	}
-
+	
+	/**
+	 * <p>
+	 * Runs the flow named {@code messageFlow} and waits until a response is
+	 * received on the VM queue named {@code vmQueueName} or a timeout is
+	 * reached. This method is used to test inbound endpoints.
+	 * </p>
+	 * <p>
+	 * A {@code vm:outbound-endpoint} must manually be appended to the flow
+	 * under test before calling this method.
+	 * </p>
+	 * 
+	 * @param messageFlow
+	 *            The name of the flow to run which will generate the expected
+	 *            message.
+	 * @param vmQueueName
+	 *            The name of the queue to listen for messages on after running
+	 *            the flow. If the queue's URL is {@code vm://foo}, then this
+	 *            parameter should be {@code foo}.
+	 * @param timeoutMs
+	 *            Time in milliseconds to wait for a message before throwing a
+	 *            {@link TimeoutException}.
+	 * 
+	 * @return The payload received at the specified VM queue.
+	 * @throws Exception
+	 */
+	protected <T> T runFlowAndWaitForResponseVM(String messageFlow, final String vmQueueName, long timeoutMs) throws Exception {
+		final String vmEndpointUrl = "vm://" + vmQueueName;
+		final MuleClient client = muleContext.getClient();
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Callable<T> waitForResponse = new Callable<T>() {
+			@Override
+			public T call() throws Exception {
+				// -1 to wait indefinitely appears to be broken
+				return (T) client.request(vmEndpointUrl, Long.MAX_VALUE).getPayload();
+			}
+		};
+		FutureTask<T> futureResponse = new FutureTask<T>(waitForResponse);
+		// Start waiting for response before message is sent
+		executor.submit(futureResponse);
+		// Send the message
+		runFlowAndGetPayload(messageFlow);
+		return futureResponse.get(timeoutMs, TimeUnit.MILLISECONDS);
+	}
 }

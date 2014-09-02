@@ -1,35 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns:google-contacts="http://www.mulesoft.org/schema/mule/google-contacts"
-	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
-	xmlns:spring="http://www.springframework.org/schema/beans"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:concur="http://www.mulesoft.org/schema/mule/concur" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" version="EE-3.4.1"
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:jdbc-ee="http://www.mulesoft.org/schema/mule/ee/jdbc" xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/1.0/mule-sqs.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd">
-    <spring:beans>
-        <spring:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-            <spring:property name="ignoreResourceNotFound" value="true"/>
-            <spring:property name="locations">
-                <spring:list>
-                    <spring:value>classpath:automation-credentials.properties</spring:value>
-                    <spring:value>${AUTOMATION_CREDENTIALS}</spring:value>
-                </spring:list>
-            </spring:property>
-        </spring:bean>
-    </spring:beans>
-    
-<!--     <sfdc:config name="Salesforce" username="${connector.username}" password="${connector.password}" securityToken="${connector.securityToken}" doc:name="Salesforce"> -->
-<!--         <sfdc:connection-pooling-profile initialisationPolicy="INITIALISE_ONE" exhaustedAction="WHEN_EXHAUSTED_GROW"/> -->
-<!--     </sfdc:config> -->
-    
-<!--     <flow name="describe-sobject" doc:name="describe-sobject"> -->
-<!--         <sfdc:describe-sobject config-ref="Salesforce" type="#[flowVars.type]" doc:name="Salesforce"/> -->
-<!--     </flow> -->
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/jdbc http://www.mulesoft.org/schema/mule/ee/jdbc/current/mule-jdbc-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
     <flow name="test-without-modifying-payload" doc:name="test-without-modifying-payload">
         <logger message="#[payload]" level="INFO" doc:name="Logger"/>
@@ -38,7 +18,7 @@ http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfd
     <flow name="test-maps-as-beans" doc:name="test-maps-as-beans">
         <set-payload value="#[flowVars.aTestDataMapKey]|#[payload.aRegularMapKey]" doc:name="Set Payload"/>
     </flow>
-    
+
     <flow name="test-pojo-as-bean" doc:name="test-pojo-as-bean">
         <set-payload value="#[payload]" doc:name="Set Payload"/>
     </flow>
@@ -46,5 +26,17 @@ http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfd
     <flow name="test-exception" doc:name="test-exception">
         <set-payload value="#[payload.get('newKey').toString()]" doc:name="Set Payload"/>
     </flow>
-    
+
+	<flow name="receive">
+		<vm:inbound-endpoint path="receive" />
+		<logger message="VM MESSAGE RECEIVED" level="INFO" doc:name="Logger" />
+		<vm:outbound-endpoint path="collectVm" />
+	</flow>
+
+	<flow name="sendFlow">
+		<set-payload value="#[flowVars.payload]"/>
+		<logger message="VM MESSAGE SENT" level="INFO" doc:name="Logger"/>
+		<vm:outbound-endpoint path="receive"/>
+	</flow>
+
 </mule>
