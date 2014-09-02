@@ -18,7 +18,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
     <flow name="test-maps-as-beans" doc:name="test-maps-as-beans">
         <set-payload value="#[flowVars.aTestDataMapKey]|#[payload.aRegularMapKey]" doc:name="Set Payload"/>
     </flow>
-    
+
     <flow name="test-pojo-as-bean" doc:name="test-pojo-as-bean">
         <set-payload value="#[payload]" doc:name="Set Payload"/>
     </flow>
@@ -26,7 +26,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
     <flow name="test-exception" doc:name="test-exception">
         <set-payload value="#[payload.get('newKey').toString()]" doc:name="Set Payload"/>
     </flow>
-    
+
 	<flow name="receive">
 		<vm:inbound-endpoint path="receive" />
 		<logger message="VM MESSAGE RECEIVED" level="INFO" doc:name="Logger" />
@@ -38,5 +38,5 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<logger message="VM MESSAGE SENT" level="INFO" doc:name="Logger"/>
 		<vm:outbound-endpoint path="receive"/>
 	</flow>
-	
+
 </mule>
