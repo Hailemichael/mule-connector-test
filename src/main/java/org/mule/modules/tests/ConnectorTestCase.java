@@ -8,9 +8,13 @@
 
 package org.mule.modules.tests;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +33,25 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.apache.mina.core.RuntimeIoException;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runners.model.InitializationError;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleMessage;
 import org.mule.api.client.MuleClient;
+import org.mule.api.processor.MessageProcessor;
+import org.mule.common.Result;
+import org.mule.common.Testable;
+import org.mule.common.metadata.ConnectorMetaDataEnabled;
+import org.mule.common.metadata.DefaultListMetaDataModel;
+import org.mule.common.metadata.MetaData;
+import org.mule.common.metadata.MetaDataKey;
+import org.mule.common.metadata.MetaDataModel;
+import org.mule.common.metadata.OperationMetaDataEnabled;
+import org.mule.common.metadata.datatype.DataType;
 import org.mule.construct.Flow;
+import org.mule.modules.tests.exceptions.GlobalElementNotFoundException;
 import org.mule.tck.junit4.FunctionalTestCase;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -55,7 +71,7 @@ import org.xml.sax.SAXException;
 @SuppressWarnings("unchecked")
 public class ConnectorTestCase extends FunctionalTestCase {
 
-    private static final String AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND = "automationCredentials bean not found. Check that ConnectorTestCaseSpringBeans.xml was imported.";
+    private static final String AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND = "automationCredentials bean not found. Check that ConnectorTestCaseSpringBeans.xml was imported to AutomationSpringBeans.xml.";
 
 	private static final Logger LOGGER = Logger.getLogger(ConnectorTestCase.class);
 
@@ -133,7 +149,7 @@ public class ConnectorTestCase extends FunctionalTestCase {
     			throw new Exception(AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND);
     		}
     	} catch (BeansException e) {
-    		throw new Exception(SPRINGBEANS_NOT_INITIALIZED); 
+    		throw new Exception(String.format("%s\n%s",SPRINGBEANS_NOT_INITIALIZED,e.getMessage()));
     	}  
     }
     
@@ -295,7 +311,7 @@ public class ConnectorTestCase extends FunctionalTestCase {
     
     /**
      * Use initializeTestRunMessage instead
-     * @param data
+     * @param beanId
      */
     @Deprecated
     protected void loadTestRunMessage(String beanId) {
@@ -527,4 +543,236 @@ public class ConnectorTestCase extends FunctionalTestCase {
 		runFlowAndGetPayload(messageFlow);
 		return futureResponse.get(timeoutMs, TimeUnit.MILLISECONDS);
 	}
+
+	/*
+	 * Test Connection related operation
+	 */
+	
+    /**
+     * Returns a Testable to exercise the test connection code on a test
+     * 
+     * @param globalElementName Name attribute value of the Global Element for which connectivity is been tested
+     * @return A Testable object whose test() method can be invoked on the test
+     */
+    protected Testable getGlobalElementTestable(String globalElementName) {
+        Object lookupObject = muleContext.getRegistry().lookupObject(globalElementName);
+        if (lookupObject == null ){
+            throw new GlobalElementNotFoundException("No global element was found for " + globalElementName);
+        }
+        return ((Testable) lookupObject);
+    }
+
+	/*
+	 * MetaData testing support
+	 */ 
+	
+    /**
+     * Asserts successful getMetaDataKeys result
+     * 
+     * @param configName Name attribute value of the Global Element for which connectivity is been tested
+     */
+    public final  void assertGetMetaDataKeysSuccess(String configName) {
+	    ConnectorMetaDataEnabled connector = (ConnectorMetaDataEnabled) muleContext.getRegistry().lookupObject(configName);
+		Result<List<MetaDataKey>> metaDataKeysResults = connector.getMetaDataKeys();
+		assertTrue(Result.Status.SUCCESS.equals(metaDataKeysResults.getStatus()));
+    }
+    
+    /**
+     * Retrieves a List<MetaDataKey> containing all of the connector's MetaDataKeys
+     * 
+     * @param configName Name attribute value of the Global Element for which connectivity is been tested
+     * @return A List<MetaDataKey> containing all of the connector's MetaDataKeys
+     */
+    public final  List<MetaDataKey> getMetaDataKeyList(String configName) {
+	    ConnectorMetaDataEnabled connector = (ConnectorMetaDataEnabled) muleContext.getRegistry().lookupObject(configName);
+		Result<List<MetaDataKey>> metaDataKeysResults = connector.getMetaDataKeys();
+		return metaDataKeysResults.get();
+    }
+    
+    /**
+     * Asserts selected MetaDataKeys are found among connector MetaDataKeys and their contents are correct
+     * 
+     * @param configName Name attribute value of the Global Element for which connectivity is been tested
+     * @param expectedMetaDataKeyList List containing MetaDataKeys as maps whose values are meant to be found among the connector MetaDataKeys
+     */
+    public final  void assertMetaDataKeysContainsKeys(String configName, List<HashMap<String,String>> expectedMetaDataKeyList) {
+    	boolean found = false;
+    	MetaDataKey metaDataKey;
+    	HashMap<String,String> expectedMetaDataKey;
+    	String currentMetaDataKeyId;
+
+    	List<MetaDataKey> retrievedMetaDataKeyList = getMetaDataKeyList(configName);
+        Iterator<HashMap<String,String>> expectedMetaDataKeys = expectedMetaDataKeyList.iterator();
+        while (expectedMetaDataKeys.hasNext()) {
+        	Iterator<MetaDataKey> retrievedMetaDataKeys = retrievedMetaDataKeyList.iterator();
+        	expectedMetaDataKey = expectedMetaDataKeys.next();
+    		while (retrievedMetaDataKeys.hasNext() && found == false) {
+    			metaDataKey = retrievedMetaDataKeys.next();
+    			currentMetaDataKeyId = metaDataKey.getId();
+    			if (currentMetaDataKeyId.equals(expectedMetaDataKey.get("id"))) {
+    				assertTrue(String.format("Retrieved MetaDataKey displayName for id %s does not match with value on provided MetaDataKey", currentMetaDataKeyId), metaDataKey.getDisplayName().equals(expectedMetaDataKey.get("displayName").toString()));
+    				assertTrue(String.format("Retrieved MetaDataKey category for id %s does not match with value on provided MetaDataKey", currentMetaDataKeyId), metaDataKey.getCategory().equals(expectedMetaDataKey.get("category").toString()));
+    				found = true;
+    			};
+    		}
+    		assertTrue("MetaDataKey id was not found on provided MetaDataKey list",found);
+        }
+        
+    }
+    
+    /*
+     * Processor related MetaData testing methods
+     */
+    
+    /**
+     * Asserts processor contained in an automation-test-flows.xml flow is MetaDataEnabled
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     */
+	public final void assertIsMetaDataEnabled(String flowName) {
+	    MessageProcessor messageProcessor = ((org.mule.construct.Flow) muleContext.getRegistry().lookupFlowConstruct(flowName)).getMessageProcessors().get(0);
+	    assertThat(messageProcessor, CoreMatchers.instanceOf(OperationMetaDataEnabled.class));
+	}
+	
+    /**
+     * Asserts processor contained in an automation-test-flows.xml flow is not MetaDataEnabled
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     */
+    public final void assertNotMetaDataEnabled(String flowName) {
+	    MessageProcessor messageProcessor = ((org.mule.construct.Flow) muleContext.getRegistry().lookupFlowConstruct(flowName)).getMessageProcessors().get(0);
+	    assertThat(messageProcessor, CoreMatchers.not(CoreMatchers.instanceOf(OperationMetaDataEnabled.class)));  
+	}
+    
+    /**
+     * Returns the MetaData Result of the input MetaData retrieved of the processor under test
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @return A Result<MetaData> containing the processor's input MetaData
+     */
+	public final  Result<MetaData> getInputMetaData(String flowName) {
+        return ((OperationMetaDataEnabled) ((org.mule.construct.Flow) muleContext.getRegistry().lookupFlowConstruct(flowName))
+                .getMessageProcessors()
+                .get(0)).getInputMetaData();
+    }
+
+    /**
+     * Returns the MetaDataModel of the input MetaData retrieved of the processor under test
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @return A MetaDataModel containing the processor's input MetaData
+     */
+	public final  MetaDataModel getInputMetaDataPayload(String flowName) {
+        return ((Result<MetaData>) getInputMetaData(flowName)).get().getPayload();
+    }
+
+    /**
+     * Returns the MetaData Result of the output MetaData retrieved of the processor under test
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @return A Result<MetaData> containing the processor's output MetaData
+     */
+	public final  Result<MetaData> getOutputMetaData(String flowName) {
+        return ((OperationMetaDataEnabled) ((org.mule.construct.Flow) muleContext.getRegistry().lookupFlowConstruct(flowName))
+                .getMessageProcessors()
+                .get(0)).getOutputMetaData(null);
+    }
+
+    /**
+     * Returns the MetaDataModel of the output MetaData retrieved of the processor under test
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @return A MetaDataModel containing the processor's output MetaData
+     */
+	public final  MetaDataModel getOutputMetaDataPayload(String flowName) {
+        return ((Result<MetaData>) getOutputMetaData(flowName)).get().getPayload();
+    }
+
+	
+	/*
+	 * Input MetaData assertions
+	 */
+	
+    /**
+     * Asserts no input MetaData for the processor under test
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     */
+	public final void assertNullInputMetaDataSuccess(String flowName) {
+        Result<MetaData> input = getInputMetaData(flowName);
+        assertTrue(Result.Status.SUCCESS.equals(input.getStatus()));
+        assertTrue(input.get() == null);
+    }
+    
+    /**
+     * Asserts first level input MetaData was successfully retrieved for the processor under test and matches an expectedDataType 
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @param expectedDataType first level MetaData DataType expected to be retrieved
+     */
+	public final  void assertFirstLevelInputMetaDataSuccess(String flowName, DataType expectedDataType) {
+        Result<MetaData> input = getInputMetaData(flowName);
+        assertTrue(Result.Status.SUCCESS.equals(input.getStatus()));
+        assertTrue(input.get().getPayload().getDataType().equals(expectedDataType));
+    }
+
+
+	/*
+	 * Output MetaData assertions
+	 */
+	
+	
+    /**
+     * Asserts no output MetaData for the processor under test
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     */
+	public final  void assertNullOutputMetaDataSuccess(String flowName) {
+        Result<MetaData> output = getOutputMetaData(flowName);
+        assertTrue(Result.Status.SUCCESS.equals(output.getStatus()));
+        assertTrue(output.get() == null);
+    }
+	
+    /**
+     * Asserts first level output MetaData was successfully retrieved for the processor under test and matches an expectedDataType 
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @param expectedDataType first level MetaData DataType expected to be retrieved
+     */
+	public final  void assertFirstLevelOutputMetaDataSuccess(String flowName, DataType expectedDataType) {
+        Result<MetaData> output = getOutputMetaData(flowName);
+        assertTrue(output.getStatus().equals(Result.Status.SUCCESS));
+        assertTrue(output.get().getPayload().getDataType().equals(expectedDataType));
+    }
+	
+    /**
+     * Asserts first level POJO output MetaData was successfully retrieved for the processor under test and is of specific class 
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @param expectedDataType first level MetaData DataType expected to be retrieved
+     */
+	public final  void assertPOJOOutputMetaDataSuccess(String flowName, String expectedImplementationType) {
+        Result<MetaData> output = getOutputMetaData(flowName);
+        assertTrue(output.getStatus().equals(Result.Status.SUCCESS));
+        assertTrue(output.get().getPayload().getDataType().equals(DataType.POJO));
+        String actualImplementationType = output.get().getPayload().getImplementationClass();
+        assertTrue(actualImplementationType.equals(expectedImplementationType));
+    }
+    
+    /**
+     * Asserts first level List output MetaData was successfully retrieved for the processor under test and it's elements are of specific class 
+     * 
+     * @param flowName Name attribute value of the flow containing the processor under test
+     * @param expectedDataType first level MetaData DataType expected to be retrieved
+     */
+	public final  void assertListFirstLevelOutputMetaDataSuccess(String flowName,String expectedImplementationType) {
+        Result<MetaData> output = getOutputMetaData(flowName);
+        DataType actualDataType = output.get().getPayload().getDataType();
+        String actualImplementationType = output.get().getPayload().getImplementationClass();
+        assertTrue(output.getStatus().equals(Result.Status.SUCCESS));
+        assertTrue(actualDataType.equals(DataType.LIST));
+    	actualImplementationType = ((DefaultListMetaDataModel) output.get().getPayload()).getElementModel().getImplementationClass();
+    	assertTrue(actualImplementationType.equals(expectedImplementationType));
+    }
+    
 }

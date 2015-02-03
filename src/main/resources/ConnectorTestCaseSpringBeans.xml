@@ -27,8 +27,8 @@
 	   <property name="ignoreResourceNotFound" value="true"/>
 	   <property name="locations">
 	      <list>
-	        <value>classpath:automation-credentials.properties</value>
-	        <value>${AUTOMATION_CREDENTIALS}</value>
+              <value>classpath:automation-credentials.properties</value>
+              <value>${AUTOMATION_CREDENTIALS}</value>
 	      </list>
 	   </property>
 	</bean>

@@ -10,6 +10,7 @@ package org.mule.modules.tests;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -27,7 +28,7 @@ public class FrameworkInitializationTest {
 		assertTrue(result.wasSuccessful());
 		
 	}
-	
+
 	@Test
 	public void testLoadAndVerifyAutomationCredentialsLocationByPlaceholder() {
 		System.setProperty("AUTOMATION_CREDENTIALS", AUTOMATION_CREDENTIALS_LOCATION);

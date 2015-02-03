@@ -18,6 +18,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.commons.io.IOUtils;
 import org.mule.transport.NullPayload;
 
+import org.mule.common.Result;
+import org.mule.common.TestResult;
+import org.mule.common.Testable;
+
 /**
  * Util class for connector tests
  *
@@ -72,5 +76,7 @@ public class ConnectorTestUtils {
     public static InputStream generateRandomInputStream() throws Exception {
     	return IOUtils.toInputStream(UUID.randomUUID().toString()); 
     }
-   
+
+
+
 }
