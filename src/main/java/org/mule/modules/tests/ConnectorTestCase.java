@@ -77,9 +77,7 @@ public class ConnectorTestCase extends FunctionalTestCase {
 
     protected static final String DEFAULT_SPRING_CONFIG_FILE = "AutomationSpringBeans.xml";
     protected static List<String> SPRING_CONFIG_FILES = new LinkedList<String>();    
-    
-    
-    private final static String EMPTY_CREDENTIALS_FILE = "Credentials file is empty";
+
     private final static String SPRINGBEANS_NOT_INITIALIZED = "Problem loading Spring beans file, couldn't create the context for ConnectorTestParent.";
     private final static String TEST_FLOWS_FILE_NOT_FOUND = "Test flows xml file was not found.";
     private final static String MALFORMED_TEST_FLOWS_FILE = "Test flows xml is not well formed.";
@@ -130,24 +128,11 @@ public class ConnectorTestCase extends FunctionalTestCase {
 		SPRING_CONFIG_FILES.add(DEFAULT_SPRING_CONFIG_FILE);
 		context = new ClassPathXmlApplicationContext(getConfigSpringFiles());
 	}
-
-	private static void loadAndVerifyAutomationCredentials() throws Exception {
-		automationCredentials = (Properties) context.getBean("automationCredentials");
-		if (automationCredentials.isEmpty()) {
-			throw new Exception(EMPTY_CREDENTIALS_FILE);
-		}
-	
-	}
     
     @BeforeClass
     public static void setUpBeforeClass() throws Exception { 
     	try {
     		initializeSpringApplicationContext();
-    		try {
-    			loadAndVerifyAutomationCredentials();
-    		} catch (BeansException e) {
-    			throw new Exception(AUTOMATION_CREDENTIALS_BEAN_NOT_FOUND);
-    		}
     	} catch (BeansException e) {
     		throw new Exception(String.format("%s\n%s",SPRINGBEANS_NOT_INITIALIZED,e.getMessage()));
     	}  
