@@ -142,28 +142,4 @@ public class ConnectorTestCaseTest extends ConnectorTestCaseTestParent {
         assertEquals(message, runFlowAndWaitForResponseVM("sendFlow", "collectVm", 1000));
     }
     
-    @Test
-    public void testRunFlowAndGetMessagePassingBeanIdInitializationException() throws Exception {
-    	thrownException.expect(org.junit.runners.model.InitializationError.class);
-        runFlowAndGetMessage("test-maps-as-beans", "aMapTestData");
-    }
-    
-    @Test
-    public void testRunFlowAndGetPayloadPassingBeanIdInitializationException() throws Exception {
-        thrownException.expect(org.junit.runners.model.InitializationError.class);
-        runFlowAndGetPayload("test-maps-as-beans", "aMapTestData");
-    }
-    
-    @Test
-    public void testRunFlowAndGetMessageInitializationException() throws Exception {
-    	thrownException.expect(org.junit.runners.model.InitializationError.class);
-        runFlowAndGetMessage("test-maps-as-beans");
-    }
-    
-    @Test
-    public void testRunFlowAndGetPayloadInitializationException() throws Exception {
-        thrownException.expect(org.junit.runners.model.InitializationError.class);
-        runFlowAndGetPayload("test-maps-as-beans");
-    }
-    
 }

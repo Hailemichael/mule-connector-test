@@ -177,25 +177,25 @@ public class ConnectorTestCase extends FunctionalTestCase {
     protected String getConfigXmlFile() {
         return "automation-test-flows.xml";
     }
-    
+
     private void verifyValidFlowName(String flowName) throws Exception {
     	if (!(testFlowsNames.contains(flowName))) {
     		throw (new Exception(FLOW_NOT_FOUND));
-    	}	
+    	}
 	}
-    
+
     private void verifyValidBeanId(String beanId) throws Exception {
     	if (!(context.containsBean(beanId))) {
     		throw (new Exception(BEAN_NOT_FOUND));
-    	}	
+    	}
 	}
-	
+
     private void preInvokationVerifications(String flowName, String ... beanId) throws Exception {
     	verifyTestRunMessageIsInitialized();
     	verifyValidFlowName(flowName);
     	if (beanId.length > 0) {
     		verifyValidBeanId(beanId[0]);
-    	}	
+    	}
     }
     
     protected void verifyTestRunMessageIsInitialized() throws Exception {
@@ -419,7 +419,6 @@ public class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected <T> T runFlowAndGetPayload(String flowName) throws Exception {
-    	preInvokationVerifications(flowName);
         MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
         return (T) response.getMessage().getPayload();
     }
@@ -432,7 +431,6 @@ public class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected MuleMessage runFlowAndGetMessage(String flowName) throws Exception {
-    	preInvokationVerifications(flowName);
     	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent());
     	return response.getMessage();
     }
@@ -444,7 +442,6 @@ public class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected <T> T runFlowAndGetInvocationProperty(String flowName, String invocationProperty) throws Exception {
-    	preInvokationVerifications(flowName);
         return (T) ((MuleMessage) runFlowAndGetMessage(flowName)).getInvocationProperty(invocationProperty);
     }
 
@@ -459,7 +456,6 @@ public class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected MuleMessage runFlowAndGetMessage(String flowName, String beanId) throws Exception {
-    	preInvokationVerifications(flowName, beanId);
     	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
         return response.getMessage();
     }
@@ -476,7 +472,6 @@ public class ConnectorTestCase extends FunctionalTestCase {
      * @throws Exception
      */
     protected <T> T runFlowAndGetPayload(String flowName, String beanId) throws Exception {
-    	preInvokationVerifications(flowName, beanId);
     	MuleEvent response = lookupFlowConstruct(flowName).process(generateMuleEvent(beanId));
         return (T) response.getMessage().getPayload();
     }
